@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <script>window["__codeletBootstrap__"] = JSON.parse('{"A":"A","B":"20260702-05-84893f2"}');</script>
+  <script src="/_sdk/f432b76fb310b513.telemetry_sdk.js"
+    integrity="sha512-9FJQ55EKmmqhyyik8BhrMVfm0+iYYfb8uOlRsjtkxJMEI97qOVEI4PnHohDjQAtvAep0IOEpdQ64eki0sz62ug=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rimbun Bimbel</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&amp;display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    :root {
+      --green-dark: #1a4731;
+      --green-mid: #2d6a4f;
+      --green-sage: #74a892;
+      --green-light: #b7e4c7;
+      --green-pale: #edf7f0;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .sidebar-link {
+      transition: all 0.2s;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .login-gradient-btn {
+      background: linear-gradient(135deg, #1a4731 0%, #2d6a4f 50%, #3d7e5d 100%);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 15px rgba(26, 71, 49, 0.3);
+    }
+
+    .login-gradient-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(26, 71, 49, 0.5);
+    }
+
+    .login-gradient-btn:active {
+      transform: translateY(0);
+    }
+
+    .role-btn-custom {
+      transition: all 0.2s ease;
+      border: 2px solid #74a892;
+      background: transparent;
+      color: #1a4731;
+    }
+
+    .role-btn-custom:hover {
+      background: #f0f9f6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.15);
+    }
+
+    .role-btn-custom.active {
+      background: linear-gradient(135deg, #1a4731 0%, #2d6a4f 100%);
+      color: white;
+      border-color: #2d6a4f;
+    }
+
+    .input-modern {
+      transition: all 0.2s ease;
+      border: 1.5px solid #e5e7eb;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .input-modern:focus {
+      border-color: #2d6a4f;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+      outline: none;
+    }
+
+    .quick-btn {
+      transition: all 0.2s;
+    }
+
+    .quick-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(26, 71, 49, 0.15);
+    }
+
+    .summary-card {
+      transition: all 0.2s;
+    }
+
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+  </style>
+  <script src="/_sdk/0179d719c431a79e.data_sdk.js" type="text/javascript"
+    integrity="sha512-OsRvJkI5GkC3MJQcgotQYotpzrMSX415GiKKgvYdxQEEkzD/fdchShO2FMSy0PJr/tiINMXOk5Vl2zAgg6bUiA=="></script>
+  <script src="/_sdk/0b3af1c300e720aa.resizing_sdk.js" type="text/javascript"
+    integrity="sha512-nX1P6oXZmEY5wCI2lUVg3BwKu1cr0yi+ZpXgZ0Yn90vkSwvpmyzBMvOyD6VLJUtBwFI2dSrw1b6OvORxSggw3w=="></script>
+</head>
+
+<body data-template-id="__page-root" class="min-h-screen"
+  style="background: linear-gradient(135deg, rgb(26, 71, 49), rgb(45, 106, 79), rgb(116, 168, 146));">
+  <!-- LOGIN PAGE -->
+  <div id="login-page" class="page active w-full flex items-center justify-center p-4"
+    style="min-height: calc(100 * min(var(--vh, 1vh), 1vh)); background: linear-gradient(135deg, rgba(26,71,49,0.95) 0%, rgba(45,106,79,0.92) 50%, rgba(116,168,146,0.9) 100%);">
+    <div data-template-id="login-card"
+      class="glass-card w-full max-w-[500px] rounded-[20px] p-8 shadow-2xl border border-white/40"
+      style="background: rgba(255, 255, 255, 0.95);">
+      <div class="text-center mb-8"><img data-template-id="login-logo"
+          class="canva-image w-24 h-24 mx-auto mb-6 object-contain" loading="lazy" src="canva://MAHOJoIu_g8/1"
+          alt="Rimbun Bimbel official logo with green leaf design">
+        <p data-template-id="login-welcome" class="canva-text text-[#1a4731] font-semibold text-lg mb-2"
+          style="color: rgb(26, 71, 49); font-weight: 600; font-style: normal; font-size: 16px;">Belajar Tumbuh Bersama
+        </p>
+      </div><label data-template-id="role-label" class="canva-text block text-sm font-semibold text-[#1a4731] mb-3"
+        style="color: rgb(26, 71, 49); font-weight: 600; font-style: normal; font-size: 16px;">Masuk sebagai</label>
+      <div class="grid grid-cols-3 gap-3 mb-6"><button type="button"
+          class="role-btn-custom active px-4 py-2.5 rounded-[15px] text-sm font-medium" data-role="Murid">Murid</button>
+        <button type="button" class="role-btn-custom px-4 py-2.5 rounded-[15px] text-sm font-medium"
+          data-role="Guru">Guru</button> <button type="button"
+          class="role-btn-custom px-4 py-2.5 rounded-[15px] text-sm font-medium" data-role="Admin">Admin</button>
+      </div><label data-template-id="username-label" class="canva-text block text-sm font-medium text-[#1a4731] mb-2"
+        for="username-input"
+        style="color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Username</label>
+      <div
+        class="flex items-center mb-4 px-4 py-3 rounded-[15px] bg-white/80 border-1.5 border-gray-200 input-modern focus-within:ring-2 focus-within:ring-[#2d6a4f]/20">
+        <i data-lucide="user" style="width:18px;height:18px;color:#74a892;margin-right:10px;flex-shrink:0"></i> <input
+          id="username-input" type="text"
+          class="flex-1 bg-transparent text-sm outline-none text-[#1a4731] placeholder-gray-400"
+          placeholder="Masukkan username">
+      </div><label data-template-id="password-label" class="canva-text block text-sm font-medium text-[#1a4731] mb-2"
+        for="password-input"
+        style="color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Password</label>
+      <div
+        class="flex items-center mb-2 px-4 py-3 rounded-[15px] bg-white/80 border-1.5 border-gray-200 input-modern focus-within:ring-2 focus-within:ring-[#2d6a4f]/20">
+        <i data-lucide="lock" style="width:18px;height:18px;color:#74a892;margin-right:10px;flex-shrink:0"></i> <input
+          id="password-input" type="password"
+          class="flex-1 bg-transparent text-sm outline-none text-[#1a4731] placeholder-gray-400"
+          placeholder="Masukkan password">
+      </div>
+      <div class="text-right mb-6"><a data-template-id="forgot-link"
+          class="canva-link text-xs text-[#2d6a4f] hover:text-[#1a4731] font-medium cursor-pointer transition"
+          style="color: rgb(45, 106, 79); font-weight: 400; font-style: normal; font-size: 16px;">Lupa Password?</a>
+      </div><button data-template-id="login-btn"
+        class="canva-button login-gradient-btn w-full py-3.5 rounded-[15px] font-semibold text-white text-base shadow-lg mb-4"
+        id="login-button" type="button"
+        style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">Masuk</button>
+    </div>
+  </div><!-- DASHBOARD -->
+  <div id="app-page" class="page" style="min-height: calc(100 * min(var(--vh, 1vh), 1vh))">
+    <div class="flex"><!-- Sidebar -->
+      <aside id="sidebar" data-template-id="sidebar"
+        class="canva-sidebar fixed lg:static w-64 h-screen z-40 flex-shrink-0 flex flex-col py-6 px-4 transition-transform -translate-x-full lg:translate-x-0 overflow-y-auto"
+        style="background: rgb(26, 71, 49);">
+        <div class="flex items-center gap-3 mb-8 px-2"><img data-template-id="sidebar-logo"
+            class="canva-image w-10 h-10 object-contain" loading="lazy" src="canva://MAHOJoIu_g8/1"
+            alt="Rimbun Bimbel logo icon"> <span data-template-id="sidebar-title"
+            class="canva-text text-lg font-bold text-white"
+            style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Rimbun
+            Bimbel</span>
+        </div>
+        <nav class="flex-1 space-y-1"><button type="button"
+            class="sidebar-link active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 text-sm font-medium"
+            data-view="dashboard"><i data-lucide="layout-dashboard" style="width:18px;height:18px"></i>
+            Dashboard</button> <button type="button"
+            class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 text-sm font-medium"
+            data-view="absensi"><i data-lucide="calendar-check" style="width:18px;height:18px"></i> Absensi</button>
+          <button type="button"
+            class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 text-sm font-medium"
+            data-view="jadwal"><i data-lucide="clock" style="width:18px;height:18px"></i> Jadwal</button> <button
+            type="button"
+            class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 text-sm font-medium"
+            data-view="materi"><i data-lucide="book" style="width:18px;height:18px"></i> Materi</button> <button
+            type="button"
+            class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 text-sm font-medium"
+            data-view="profil"><i data-lucide="user" style="width:18px;height:18px"></i> Profil</button> <button
+            type="button"
+            class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/90 text-sm font-medium"
+            data-view="pengumuman"><i data-lucide="megaphone" style="width:18px;height:18px"></i> Pengumuman</button>
+        </nav><button type="button" id="logout-btn"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 text-sm hover:text-white hover:bg-white/10 transition"><i
+            data-lucide="log-out" style="width:18px;height:18px"></i> Keluar</button>
+      </aside><!-- Main -->
+      <div class="flex-1 lg:ml-0 min-h-screen bg-[#f4faf6]">
+        <header class="lg:hidden flex items-center justify-between p-4 bg-white shadow-sm"><button type="button"
+            id="menu-toggle" class="p-2 rounded-lg hover:bg-gray-100"><i data-lucide="menu"
+              style="width:22px;height:22px;color:#1a4731"></i></button> <span
+            class="font-semibold text-[#1a4731]">Rimbun Bimbel</span>
+          <div class="w-8 h-8 rounded-full bg-[#b7e4c7]"></div>
+        </header>
+        <main class="p-4 lg:p-8 max-w-6xl mx-auto"><!-- Dashboard View -->
+          <section id="view-dashboard" class="view-section flex flex-col"
+            style="min-height: calc(100 * min(var(--vh, 1vh), 1vh)) - 120px;">
+            <div class="mb-8">
+              <div class="flex items-center justify-center mb-6">
+                <img data-template-id="dashboard-logo" class="canva-image h-16 object-contain" loading="lazy"
+                  src="canva://MAHOJoIu_g8/1" alt="Rimbun Bimbel logo">
+              </div>
+              <h1 data-template-id="welcome-text" class="canva-text text-center text-3xl font-bold text-[#1a4731] mb-2"
+                style="color: rgb(26, 71, 49); font-weight: 700; font-style: normal; font-size: 28px;">Halo, Rina
+                Permata 👋</h1>
+              <p data-template-id="tagline-text" class="canva-text text-center text-lg text-[#74a892] font-medium mb-2"
+                style="color: rgb(116, 168, 146); font-weight: 500; font-style: normal; font-size: 18px;">Belajar Tumbuh
+                Bersama</p>
+              <p id="date-display" class="text-center text-sm text-gray-500"></p>
+            </div>
+            <div class="flex-1 flex flex-col">
+              <div class="mb-8">
+                <h2 data-template-id="menu-utama-title" class="canva-text font-semibold text-[#1a4731] text-lg mb-4"
+                  style="color: rgb(26, 71, 49); font-weight: 600; font-style: normal; font-size: 18px;">Menu Utama</h2>
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                  <button type="button" data-template-id="menu-absensi"
+                    class="canva-button quick-btn rounded-xl p-5 text-center font-medium" data-nav="absensi"
+                    style="background: rgb(255, 255, 255); color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Absensi</button>
+                  <button type="button" data-template-id="menu-jadwal"
+                    class="canva-button quick-btn rounded-xl p-5 text-center font-medium" data-nav="jadwal"
+                    style="background: rgb(255, 255, 255); color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Jadwal</button>
+                  <button type="button" data-template-id="menu-materi"
+                    class="canva-button quick-btn rounded-xl p-5 text-center font-medium" data-nav="materi"
+                    style="background: rgb(255, 255, 255); color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Materi</button>
+                  <button type="button" data-template-id="menu-profil"
+                    class="canva-button quick-btn rounded-xl p-5 text-center font-medium" data-nav="profil"
+                    style="background: rgb(255, 255, 255); color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Profil</button>
+                  <button type="button" data-template-id="menu-pengumuman"
+                    class="canva-button quick-btn rounded-xl p-5 text-center font-medium" data-nav="pengumuman"
+                    style="background: rgb(255, 255, 255); color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Pengumuman</button>
+                  <button type="button" data-template-id="menu-prestasi"
+                    class="canva-button quick-btn rounded-xl p-5 text-center font-medium" data-nav="prestasi"
+                    style="background: rgb(255, 255, 255); color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Prestasi</button>
+                </div>
+              </div>
+              <div class="mt-auto">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 data-template-id="announcement-title-short" class="canva-text font-semibold text-[#1a4731]"
+                    style="color: rgb(26, 71, 49); font-weight: 600; font-style: normal; font-size: 19px;">📢 Pengumuman
+                    Terbaru</h3><button type="button"
+                    class="text-xs text-[#2d6a4f] hover:text-[#1a4731] font-medium transition"
+                    onclick="document.querySelector('.sidebar-link[data-view=pengumuman]').click(); event.preventDefault();">Lihat
+                    Semua →</button>
+                </div>
+                <div data-template-id="latest-announcements" class="canva-card rounded-xl p-4 shadow-sm space-y-2"
+                  style="background: rgb(255, 255, 255);">
+                  <div class="flex gap-3 items-start pb-2 border-b border-gray-100">
+                    <div class="w-2 h-2 mt-1.5 rounded-full bg-[#2d6a4f] flex-shrink-0"></div>
+                    <div>
+                      <p data-template-id="announce-1-title" class="canva-text text-sm font-medium text-[#1a4731]"
+                        style="color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">Ujian
+                        Tengah Semester dimulai 14 Juli</p>
+                      <p data-template-id="announce-1-date" class="canva-text text-xs text-gray-500 mt-0.5"
+                        style="color: rgb(156, 163, 175); font-weight: 400; font-style: normal; font-size: 16px;">30
+                        Juni 2026</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-3 items-start pt-2">
+                    <div class="w-2 h-2 mt-1.5 rounded-full bg-[#74a892] flex-shrink-0"></div>
+                    <div>
+                      <p data-template-id="announce-2-title" class="canva-text text-sm font-medium text-[#1a4731]"
+                        style="color: rgb(26, 71, 49); font-weight: 500; font-style: normal; font-size: 16px;">
+                        Pendaftaran kelas baru dibuka 5 Juli</p>
+                      <p data-template-id="announce-2-date" class="canva-text text-xs text-gray-500 mt-0.5"
+                        style="color: rgb(156, 163, 175); font-weight: 400; font-style: normal; font-size: 16px;">29
+                        Juni 2026</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section><!-- Materi View -->
+          <section id="view-materi" class="view-section hidden">
+            <h2 class="text-2xl font-bold text-[#1a4731] mb-6">📚 Materi Pembelajaran</h2>
+            <div class="space-y-4">
+              <div class="rounded-xl p-4 bg-white shadow-sm border-l-4 border-[#6366f1]">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="font-medium text-[#1a4731]">Matematika - Bab 5: Integral</p><span
+                    class="text-xs text-gray-500">70% selesai</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-[#6366f1] h-2 rounded-full" style="width: 70%"></div>
+                </div>
+              </div>
+              <div class="rounded-xl p-4 bg-white shadow-sm border-l-4 border-[#6366f1]">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="font-medium text-[#1a4731]">Fisika - Bab 3: Gelombang Cahaya</p><span
+                    class="text-xs text-gray-500">45% selesai</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-[#6366f1] h-2 rounded-full" style="width: 45%"></div>
+                </div>
+              </div>
+              <div class="rounded-xl p-4 bg-white shadow-sm border-l-4 border-[#6366f1]">
+                <div class="flex justify-between items-start mb-2">
+                  <p class="font-medium text-[#1a4731]">Bahasa Inggris - Unit 8: Speaking</p><span
+                    class="text-xs text-gray-500">Belum dimulai</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-gray-300 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </section><!-- Prestasi View -->
+          <section id="view-prestasi" class="view-section hidden">
+            <h2 class="text-2xl font-bold text-[#1a4731] mb-6">🏆 Prestasi Saya</h2>
+            <div class="space-y-4">
+              <div
+                class="rounded-xl p-5 bg-gradient-to-r from-yellow-50 to-amber-50 shadow-sm border border-yellow-200">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="award" style="width:24px;height:24px;color:#d97706;flex-shrink:0;margin-top:2px"></i>
+                  <div>
+                    <p class="font-medium text-[#1a4731]">Nilai Sempurna Ulangan Matematika</p>
+                    <p class="text-xs text-gray-600 mt-1">27 Juni 2026 • Prestasi Akademik</p>
+                  </div>
+                </div>
+              </div>
+              <div class="rounded-xl p-5 bg-gradient-to-r from-blue-50 to-cyan-50 shadow-sm border border-blue-200">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="star" style="width:24px;height:24px;color:#3b82f6;flex-shrink:0;margin-top:2px"></i>
+                  <div>
+                    <p class="font-medium text-[#1a4731]">Kehadiran 100% Bulan Juni</p>
+                    <p class="text-xs text-gray-600 mt-1">30 Juni 2026 • Disiplin &amp; Kehadiran</p>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="rounded-xl p-5 bg-gradient-to-r from-green-50 to-emerald-50 shadow-sm border border-green-200">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="zap" style="width:24px;height:24px;color:#16a34a;flex-shrink:0;margin-top:2px"></i>
+                  <div>
+                    <p class="font-medium text-[#1a4731]">Penyelesaian Semua PR Tepat Waktu</p>
+                    <p class="text-xs text-gray-600 mt-1">25 Juni 2026 • Dedikasi &amp; Konsistensi</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section><!-- Absensi View -->
+          <section id="view-absensi" class="view-section hidden"><!-- Status Absensi Hari Ini Card -->
+            <div data-template-id="absensi-status-card" class="canva-card rounded-2xl p-5 shadow-md mb-6"
+              style="background: rgb(255, 255, 255);">
+              <h3 class="font-semibold text-[#1a4731] text-lg mb-4">📅 Status Absensi Hari Ini</h3>
+              <p id="absensi-today-date" class="text-sm text-gray-500 mb-4"></p><!-- Has Class Today -->
+              <div id="has-class-container" class="hidden">
+                <p id="has-class-message" class="text-sm text-[#2d6a4f] font-medium mb-3"></p>
+                <p id="class-schedule" class="text-sm text-gray-600 mb-4"></p><button id="absen-sekarang-btn"
+                  type="button" class="w-full py-3 rounded-xl font-semibold text-white transition-all"
+                  style="background: linear-gradient(135deg, #1a4731 0%, #2d6a4f 100%); box-shadow: 0 4px 15px rgba(26, 71, 49, 0.3);">Absen
+                  Sekarang</button> <button id="sudah-absen-btn" type="button"
+                  class="w-full py-3 rounded-xl font-semibold text-white hidden transition-all"
+                  style="background: #999999; cursor: not-allowed;">✓ Sudah Absen Hari Ini</button>
+              </div><!-- No Class Today -->
+              <div id="no-class-container" class="hidden">
+                <p class="text-sm text-[#74a892] font-medium mb-4">Hari ini tidak ada jadwal les</p>
+                <div class="p-3 rounded-lg bg-[#edf7f0] border border-[#b7e4c7]">
+                  <p class="text-xs text-gray-600 font-medium mb-2">Jadwal Les Berikutnya:</p>
+                  <p id="next-class-info" class="text-sm font-medium text-[#2d6a4f]"></p>
+                </div>
+              </div>
+            </div><!-- Attendance History Card -->
+            <div data-template-id="history-card" class="canva-card rounded-2xl p-5 shadow-md overflow-x-auto"
+              style="background: rgb(255, 255, 255);">
+              <h3 data-template-id="history-title" class="canva-text font-semibold mb-3"
+                style="color: rgb(26, 71, 49); font-weight: 600; font-style: normal; font-size: 19px;">Riwayat Absensi
+              </h3>
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-gray-500 border-b">
+                    <th class="pb-2">Tanggal</th>
+                    <th class="pb-2">Jam</th>
+                    <th class="pb-2">Status</th>
+                    <th class="pb-2">Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-100">
+                    <td class="py-2">30 Jun 2026</td>
+                    <td>15:00</td>
+                    <td><span
+                        class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">Hadir</span>
+                    </td>
+                    <td class="text-gray-500">Matematika</td>
+                  </tr>
+                  <tr class="border-b border-gray-100">
+                    <td class="py-2">29 Jun 2026</td>
+                    <td>15:05</td>
+                    <td><span
+                        class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">Hadir</span>
+                    </td>
+                    <td class="text-gray-500">Matematika</td>
+                  </tr>
+                  <tr class="border-b border-gray-100">
+                    <td class="py-2">28 Jun 2026</td>
+                    <td>-</td>
+                    <td><span
+                        class="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">Izin</span>
+                    </td>
+                    <td class="text-gray-500">Acara keluarga</td>
+                  </tr>
+                  <tr>
+                    <td class="py-2">27 Jun 2026</td>
+                    <td>16:30</td>
+                    <td><span
+                        class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">Hadir</span>
+                    </td>
+                    <td class="text-gray-500">Fisika</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section><!-- Jadwal View -->
+          <section id="view-jadwal" class="view-section hidden">
+            <div data-template-id="jadwal-card" class="canva-card rounded-2xl p-5 shadow-md"
+              style="background: rgb(255, 255, 255);">
+              <h3 data-template-id="jadwal-title" class="canva-text font-semibold mb-4"
+                style="color: rgb(26, 71, 49); font-weight: 600; font-style: normal; font-size: 19px;">📚 Jadwal Les
+                Hari Ini</h3>
+              <div class="space-y-3">
+                <div class="p-4 rounded-xl bg-[#edf7f0] border-l-4 border-[#2d6a4f]">
+                  <div class="flex justify-between items-center">
+                    <p class="font-medium text-[#1a4731] text-sm">Matematika</p><span
+                      class="text-xs text-gray-500">15:00 - 16:30</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Pak Budi • Ruang A1</p>
+                </div>
+                <div class="p-4 rounded-xl bg-[#edf7f0] border-l-4 border-[#74a892]">
+                  <div class="flex justify-between items-center">
+                    <p class="font-medium text-[#1a4731] text-sm">Fisika</p><span class="text-xs text-gray-500">16:30 -
+                      18:00</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Bu Sari • Ruang B2</p>
+                </div>
+                <div class="p-4 rounded-xl bg-gray-50 border-l-4 border-gray-300">
+                  <div class="flex justify-between items-center">
+                    <p class="font-medium text-gray-400 text-sm">Bahasa Inggris</p><span
+                      class="text-xs text-gray-400">18:00 - 19:30</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1">Pak Reza • Ruang A2 (Besok)</p>
+                </div>
+              </div>
+            </div>
+          </section><!-- Profil View -->
+          <section id="view-profil" class="view-section hidden">
+            <div data-template-id="profil-card" class="canva-card rounded-2xl p-6 shadow-md text-center"
+              style="background: rgb(255, 255, 255);"><img data-template-id="profil-photo"
+                class="canva-image w-24 h-24 rounded-full object-cover mx-auto shadow-md mb-4" loading="lazy"
+                src="https://images.pexels.com/photos/31274806/pexels-photo-31274806.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=400"
+                alt="Portrait of a young woman in a school uniform adjusting her glasses">
+              <h2 data-template-id="profil-name" class="canva-text text-xl font-bold"
+                style="color: rgb(26, 71, 49); font-weight: 700; font-style: normal; font-size: 24px;">Rina Permata</h2>
+              <p data-template-id="profil-role" class="canva-text text-sm text-[#74a892] mt-1"
+                style="color: rgb(116, 168, 146); font-weight: 400; font-style: normal; font-size: 16px;">Murid — XII
+                IPA 2 — Paket Premium</p>
+              <div class="mt-6 text-left space-y-3 max-w-xs mx-auto">
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500">Email</span><span class="font-medium">rina@rimbun.id</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500">Telepon</span><span class="font-medium">0812-3456-7890</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500">Kelas</span><span class="font-medium">XII IPA 2</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500">Paket</span><span class="font-medium">Premium (Mat+Fis+Eng)</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-500">Bergabung</span><span class="font-medium">Januari 2025</span>
+                </div>
+              </div>
+            </div>
+          </section><!-- Pengumuman View -->
+          <section id="view-pengumuman" class="view-section hidden">
+            <div data-template-id="pengumuman-card" class="canva-card rounded-2xl p-5 shadow-md"
+              style="background: rgb(255, 255, 255);">
+              <h3 data-template-id="pengumuman-title" class="canva-text font-semibold mb-4"
+                style="color: rgb(26, 71, 49); font-weight: 600; font-style: normal; font-size: 19px;">📢 Semua
+                Pengumuman</h3>
+              <div class="space-y-4">
+                <div class="p-4 rounded-xl bg-[#edf7f0] border-l-4 border-[#2d6a4f]">
+                  <p class="font-medium text-[#1a4731] text-sm">Ujian Tengah Semester</p>
+                  <p class="text-xs text-gray-500 mt-1">14 Juli 2026 — Persiapkan diri dengan baik!</p>
+                </div>
+                <div class="p-4 rounded-xl bg-[#edf7f0] border-l-4 border-[#74a892]">
+                  <p class="font-medium text-[#1a4731] text-sm">Pendaftaran Kelas Baru</p>
+                  <p class="text-xs text-gray-500 mt-1">5 Juli 2026 — Kuota terbatas, segera daftar.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-[#edf7f0] border-l-4 border-[#b7e4c7]">
+                  <p class="font-medium text-[#1a4731] text-sm">Libur Hari Raya</p>
+                  <p class="text-xs text-gray-500 mt-1">10-12 Juli 2026 — Selamat berlibur!</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden"></div>
+  </div>
+  <script src="/_sdk/6740099151a06780.editing_sdk.js"
+    integrity="sha512-eSc5OWFJjK6fUpxViOKXm5ekJ3Gp5icgygsjPVz9Xzudb9TkX/uNdpqNHc63uN0PdxYE9+g8pZAHIib0FgE0Cw=="></script>
+  <script>
+    lucide.createIcons();
+
+    let selectedRole = 'Murid';
+
+    // Role buttons
+    document.querySelectorAll('.role-btn-custom').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.role-btn-custom').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedRole = btn.dataset.role;
+      });
+    });
+
+    // Login
+    document.getElementById('login-button').addEventListener('click', () => {
+      document.getElementById('login-page').classList.remove('active');
+      document.getElementById('app-page').classList.add('active');
+      const now = new Date();
+      document.getElementById('date-display').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      // Set date for Absensi page
+      if (document.getElementById('absensi-date-display')) {
+        document.getElementById('absensi-date-display').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      }
+      buildCalendar();
+    });
+
+    // Sidebar nav
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('view-' + link.dataset.view).classList.remove('hidden');
+        document.getElementById('sidebar').classList.add('-translate-x-full');
+        document.getElementById('sidebar-overlay').classList.add('hidden');
+      });
+    });
+
+    // Quick menu navigation
+    document.querySelectorAll('[data-nav]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.nav;
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        document.querySelector(`.sidebar-link[data-view="${view}"]`).classList.add('active');
+        document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('view-' + view).classList.remove('hidden');
+      });
+    });
+
+    // Mobile menu
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.remove('-translate-x-full');
+      document.getElementById('sidebar-overlay').classList.remove('hidden');
+    });
+    document.getElementById('sidebar-overlay').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      document.getElementById('sidebar-overlay').classList.add('hidden');
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      document.getElementById('app-page').classList.remove('active');
+      document.getElementById('login-page').classList.add('active');
+    });
+
+    // Calendar
+    function buildCalendar() {
+      // Old calendar function removed - Absensi page uses new format
+    }
+
+    // Attendance status buttons (Absensi Hari Ini section)
+    let selectedAttendanceStatus = null;
+    document.querySelectorAll('.attendance-status-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.attendance-status-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'transparent';
+          b.style.color = '#1a4731';
+        });
+        btn.classList.add('active');
+        const borderColor = getComputedStyle(btn).borderColor;
+        btn.style.background = borderColor;
+        btn.style.color = 'white';
+        selectedAttendanceStatus = btn.dataset.status;
+        // Show save button when status is selected
+        document.querySelector('[data-template-id="absensi-save-button"]').style.display = 'block';
+      });
+    });
+
+    // Save attendance
+    document.querySelector('[data-template-id="absensi-save-button"]')?.addEventListener('click', () => {
+      if (!selectedAttendanceStatus) {
+        return;
+      }
+      // Reset form after save
+      document.querySelectorAll('.attendance-status-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.background = 'transparent';
+        b.style.color = '#1a4731';
+      });
+      document.querySelector('[data-template-id="absensi-save-button"]').style.display = 'none';
+      selectedAttendanceStatus = null;
+    });
+
+    // Display today's date on Absensi page when opened
+    document.querySelectorAll('[data-view="absensi"]').forEach(link => {
+      link.addEventListener('click', () => {
+        const now = new Date();
+        document.getElementById('absensi-today-date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      });
+    });
+
+    // Schedule detection logic for Absensi page
+    const scheduleData = {
+      0: [], // Sunday
+      1: [ // Monday
+        { subject: 'Matematika', time: '15:00 - 16:30', teacher: 'Pak Budi', room: 'A1' }
+      ],
+      2: [], // Tuesday
+      3: [ // Wednesday
+        { subject: 'Fisika', time: '16:30 - 18:00', teacher: 'Bu Sari', room: 'B2' }
+      ],
+      4: [], // Thursday
+      5: [ // Friday
+        { subject: 'Matematika', time: '15:00 - 16:30', teacher: 'Pak Budi', room: 'A1' }
+      ],
+      6: [] // Saturday
+    };
+
+    // Initialize Absensi page when view changes
+    document.querySelectorAll('[data-view="absensi"]').forEach(link => {
+      link.addEventListener('click', () => {
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const todayClasses = scheduleData[dayOfWeek] || [];
+
+        document.getElementById('absensi-today-date').textContent =
+          now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        if (todayClasses.length > 0) {
+          // Show has class container
+          document.getElementById('has-class-container').classList.remove('hidden');
+          document.getElementById('no-class-container').classList.add('hidden');
+
+          const firstClass = todayClasses[0];
+          document.getElementById('has-class-message').textContent = 'Hari ini kamu memiliki jadwal les';
+          document.getElementById('class-schedule').textContent =
+            `${firstClass.subject} • ${firstClass.time} (${firstClass.room})`;
+
+          // Reset buttons
+          document.getElementById('absen-sekarang-btn').classList.remove('hidden');
+          document.getElementById('sudah-absen-btn').classList.add('hidden');
+        } else {
+          // Show no class container
+          document.getElementById('has-class-container').classList.add('hidden');
+          document.getElementById('no-class-container').classList.remove('hidden');
+
+          // Find next class (dummy: Monday's class if today is not Monday)
+          let nextDayClass = null;
+          for (let i = 1; i <= 7; i++) {
+            const nextDay = (dayOfWeek + i) % 7;
+            if (scheduleData[nextDay].length > 0) {
+              nextDayClass = scheduleData[nextDay][0];
+              const nextDate = new Date(now);
+              nextDate.setDate(nextDate.getDate() + i);
+              document.getElementById('next-class-info').textContent =
+                `${nextDayClass.subject} • ${nextDate.toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} (${nextDayClass.time})`;
+              break;
+            }
+          }
+        }
+      });
+    });
+
+    // Handle Absen Sekarang button click
+    document.getElementById('absen-sekarang-btn')?.addEventListener('click', () => {
+      document.getElementById('absen-sekarang-btn').classList.add('hidden');
+      document.getElementById('sudah-absen-btn').classList.remove('hidden');
+    });
+  </script>
+  <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'a14bf5d0b455f92e',t:'MTc4Mjk3NzU4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>
