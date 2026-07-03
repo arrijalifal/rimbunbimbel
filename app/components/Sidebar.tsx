@@ -25,7 +25,6 @@ const menuItems = [
   { id: 'laporan', label: 'Laporan Belajar', icon: BarChart3, path: '/laporan' }, // Menu baru
   { id: 'profil', label: 'Profil', icon: User, path: '/profil' },
   { id: 'pengumuman', label: 'Pengumuman', icon: Megaphone, path: '/pengumuman' },
-  { id: 'prestasi', label: 'Prestasi', icon: Trophy, path: '/prestasi' },
 ];
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
