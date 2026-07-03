@@ -8,7 +8,8 @@ import {
   User,
   Megaphone,
   LogOut,
-  Trophy
+  Trophy,
+  BarChart3, // Tambahkan icon untuk Laporan Belajar
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -21,7 +22,7 @@ const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { id: 'absensi', label: 'Absensi', icon: CalendarCheck, path: '/absensi' },
   { id: 'jadwal', label: 'Jadwal', icon: Clock, path: '/jadwal' },
-  { id: 'materi', label: 'Materi', icon: Book, path: '/materi' },
+  { id: 'laporan', label: 'Laporan Belajar', icon: BarChart3, path: '/laporan' }, // Menu baru
   { id: 'profil', label: 'Profil', icon: User, path: '/profil' },
   { id: 'pengumuman', label: 'Pengumuman', icon: Megaphone, path: '/pengumuman' },
   { id: 'prestasi', label: 'Prestasi', icon: Trophy, path: '/prestasi' },

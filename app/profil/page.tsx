@@ -26,24 +26,24 @@ export default function ProfilPage() {
               />
             </div>
             <h2 className="text-xl font-bold text-[#1a4731]">Rina Permata</h2>
-            <p className="text-sm text-[#74a892] mt-1">Murid — XII IPA 2 — Paket Premium</p>
+            <p className="text-sm text-[#74a892] mt-1">Murid — XII IPA 2</p>
 
             <div className="mt-6 text-left space-y-3 max-w-xs mx-auto">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Email</span>
-                <span className="font-medium">rina@rimbun.id</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Telepon</span>
-                <span className="font-medium">0812-3456-7890</span>
+                <span className="text-gray-500">Username</span>
+                <span className="font-medium">anakba3kh4ti</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Kelas</span>
                 <span className="font-medium">XII IPA 2</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Paket</span>
-                <span className="font-medium">Premium (Mat+Fis+Eng)</span>
+                <span className="text-gray-500">Program</span>
+                <span className="font-medium">Calistung</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Jadwal Les</span>
+                <span className="font-medium">Senin-Jum'at</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Bergabung</span>
