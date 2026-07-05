@@ -20,5 +20,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ user });
+  return NextResponse.json({ 
+    user: {
+      username: user.username,
+      role: user.role
+    }
+  });
 }

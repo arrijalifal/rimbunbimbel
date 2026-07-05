@@ -9,7 +9,7 @@ import {
   Megaphone,
   LogOut,
   Trophy,
-  BarChart3, // Tambahkan icon untuk Laporan Belajar
+  BarChart3,
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -22,7 +22,7 @@ const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { id: 'absensi', label: 'Absensi', icon: CalendarCheck, path: '/absensi' },
   { id: 'jadwal', label: 'Jadwal', icon: Clock, path: '/jadwal' },
-  { id: 'laporan', label: 'Laporan Belajar', icon: BarChart3, path: '/laporan' }, // Menu baru
+  { id: 'laporan', label: 'Laporan Belajar', icon: BarChart3, path: '/laporan' },
   { id: 'profil', label: 'Profil', icon: User, path: '/profil' },
   { id: 'pengumuman', label: 'Pengumuman', icon: Megaphone, path: '/pengumuman' },
 ];
@@ -36,9 +36,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     onClose();
   };
 
-  const handleLogout = () => {
-    router.push('/login');
-    onClose();
+  const handleLogout = async () => {
+    try {
+      // Panggil API logout
+      const response = await fetch('/api/logout', { 
+        method: 'POST' 
+      });
+      
+      if (response.ok) {
+        // Redirect ke login
+        router.push('/login');
+        router.refresh(); // Refresh untuk update middleware
+        onClose();
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: redirect manual
+      router.push('/login');
+      router.refresh();
+    }
   };
 
   const isActive = (path: string) => pathname === path;

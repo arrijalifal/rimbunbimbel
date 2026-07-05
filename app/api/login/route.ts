@@ -4,7 +4,7 @@ import { comparePassword, generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const { username, password, role } = await request.json();
 
     if (!username || !password) {
       return NextResponse.json(
@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Cari user di Google Sheet
     const user = await findUserByUsername(username);
 
     if (!user) {
@@ -23,7 +22,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verifikasi password (pastikan password di sheet sudah di-hash)
+    if (role && user.role && user.role !== role) {
+      return NextResponse.json(
+        { error: `Akun ini bukan untuk ${role}` },
+        { status: 403 }
+      );
+    }
+
     const isValidPassword = await comparePassword(password, user.password);
 
     if (!isValidPassword) {
@@ -33,20 +38,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate JWT token
+    // ✅ Perbaiki: hanya kirim username dan role
     const token = generateToken({
-      id: user.id,
       username: user.username,
-      name: user.name
+      role: user.role || 'Murid'
     });
 
-    // Set cookie
+    console.log('🔄 Setting cookie...');
+    console.log('  Token:', token.substring(0, 20) + '...');
+    console.log('  Environment:', process.env.NODE_ENV);
+
     const response = NextResponse.json({
       message: 'Login berhasil',
       user: {
-        id: user.id,
         username: user.username,
-        name: user.name
+        role: user.role || 'Murid'
       }
     });
 
@@ -54,8 +60,10 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 // 7 hari
+      maxAge: 7 * 24 * 60 * 60
     });
+
+    console.log('✅ Cookie set response:', response.cookies);
 
     return response;
   } catch (error) {

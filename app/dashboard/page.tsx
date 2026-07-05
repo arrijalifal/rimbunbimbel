@@ -11,6 +11,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState('');
+  const [user, setUser] = useState<{ username: string; role: string } | null>(null);
+  const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState({
     attendancePercentage: 0,
     averageScore: 0,
@@ -20,6 +22,26 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
+    // Ambil data user
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+        } else {
+          router.push('/login');
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+
     const now = new Date();
     setCurrentDate(
       now.toLocaleDateString('id-ID', {
@@ -35,15 +57,12 @@ export default function DashboardPage() {
     const attendedClasses = attendanceData.filter(a => a.status === 'Hadir').length;
     const attendancePercentage = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 0;
 
-    // Nilai rata-rata (dummy data untuk demo)
     const averageScore = 85.5;
 
-    // Hitung kelas yang akan datang (berdasarkan jadwal hari ini dan seterusnya)
     const today = new Date().getDay();
     let upcomingCount = 0;
     for (let i = 0; i < 7; i++) {
       const day = (today + i) % 7;
-      // Asumsikan ada jadwal di hari Senin, Rabu, Jumat
       if ([1, 3, 5].includes(day)) {
         upcomingCount++;
       }
@@ -56,7 +75,18 @@ export default function DashboardPage() {
       attendedClasses,
       upcomingClasses: upcomingCount,
     });
-  }, []);
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-[#f4faf6] items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#f4faf6]">
@@ -76,12 +106,16 @@ export default function DashboardPage() {
                   <span className="text-3xl font-bold text-green-dark">RB</span>
                 </div>
               </div>
-              <h1 className="text-center text-3xl font-bold text-[#1a4731] mb-2">Halo, Rina Permata 👋</h1>
-              <p className="text-center text-lg text-[#74a892] font-medium mb-2">Belajar Tumbuh Bersama</p>
+              <h1 className="text-center text-3xl font-bold text-[#1a4731] mb-2">
+                Halo, {user?.username || 'Pengguna'} 👋
+              </h1>
+              <p className="text-center text-lg text-[#74a892] font-medium mb-2">
+                {user?.role === 'Guru' ? 'Selamat datang, Guru!' : 'Belajar Tumbuh Bersama'}
+              </p>
               <p className="text-center text-sm text-gray-500">{currentDate}</p>
             </div>
 
-            {/* Statistik Cards */}
+            {/* Statistik Cards - sama seperti sebelumnya */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {/* Card Absensi */}
               <div className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200">
@@ -134,7 +168,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Pengumuman Terbaru */}
+            {/* Pengumuman Terbaru - sama seperti sebelumnya */}
             <div className="mt-auto">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-[#1a4731] text-[19px]">📢 Pengumuman Terbaru</h3>

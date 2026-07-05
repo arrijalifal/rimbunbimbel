@@ -1,26 +1,58 @@
+export const runtime = 'nodejs'; // ✅ Tambahkan ini di baris paling atas
+
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 
-const PUBLIC_ROUTES = ['/login', '/register', '/api/login', '/api/register'];
-const API_ROUTES = ['/api/login', '/api/logout', '/api/auth/me'];
+const PUBLIC_ROUTES = ['/', '/login', '/register']; // ✅ Tambahkan '/'
+const PUBLIC_API_ROUTES = ['/api/login', '/api/register'];
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const pathname = request.nextUrl.pathname;
 
-  // Allow public routes
-  if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
+  console.log('📌 Middleware:', pathname, 'Token:', !!token);
+
+  // Jika di root path '/'
+  if (pathname === '/') {
+    if (token) {
+      const user = verifyToken(token);
+      if (user) {
+        // Sudah login, redirect ke dashboard
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    }
+    // Belum login, redirect ke login
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // Jika akses ke login tapi sudah punya token valid
+  if (pathname === '/login') {
+    if (token) {
+      const user = verifyToken(token);
+      if (user) {
+        console.log('✅ Already logged in, redirect to dashboard');
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    }
+    // Belum login, tampilkan halaman login
     return NextResponse.next();
   }
 
-  // Allow specific API routes
-  if (API_ROUTES.some(route => pathname.startsWith(route))) {
+  // Public routes lainnya
+  if (PUBLIC_ROUTES.includes(pathname)) {
     return NextResponse.next();
   }
 
-  // Check authentication
+  // Public API
+  if (PUBLIC_API_ROUTES.some(route => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+
+  // Protected routes (harus login)
   if (!token) {
+    console.log('❌ No token, redirect to login');
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);
@@ -28,9 +60,21 @@ export function middleware(request: NextRequest) {
 
   const user = verifyToken(token);
   if (!user) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('from', pathname);
-    return NextResponse.redirect(loginUrl);
+    console.log('❌ Invalid token, redirect to login');
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('token');
+    return response;
+  }
+
+  console.log('✅ Authenticated:', user.username);
+
+  // Role-based access
+  if (pathname.startsWith('/admin') && user.role !== 'Guru') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  if (pathname.startsWith('/murid') && user.role !== 'Murid') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return NextResponse.next();
@@ -38,14 +82,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     * - api routes that are public
-     */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public|.well-known).*)',
   ],
 };
