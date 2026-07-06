@@ -13,18 +13,18 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth/me');
-      if (response.ok) {
-        router.push('/dashboard');
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          router.push('/dashboard');
+        }
+      } catch {
+        // Tetap di halaman login
       }
-    } catch {
-      // Tetap di halaman login
-    }
-  };
-  checkAuth();
-}, [router]);
+    };
+    checkAuth();
+  }, [router]);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -41,8 +41,8 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          username, 
+        body: JSON.stringify({
+          username,
           password,
           role
         }),
@@ -57,7 +57,7 @@ export default function LoginPage() {
 
       router.push('/dashboard');
       router.refresh();
-      
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
@@ -93,8 +93,8 @@ export default function LoginPage() {
               type="button"
               onClick={() => setRole(r)}
               className={`px-4 py-2.5 rounded-[15px] text-sm font-medium transition-all duration-200
-                ${role === r 
-                  ? 'active bg-gradient-to-br from-green-dark to-green-mid text-white border-2 border-green-mid' 
+                ${role === r
+                  ? 'active bg-gradient-to-br from-green-dark to-green-mid text-white border-2 border-green-mid'
                   : 'role-btn-custom'}`}
             >
               {r}
@@ -115,6 +115,7 @@ export default function LoginPage() {
             className="flex-1 bg-transparent text-sm outline-none text-green-dark placeholder-gray-400"
             placeholder="Masukkan username"
             disabled={loading}
+            form='login-form'
           />
         </div>
 
@@ -131,36 +132,38 @@ export default function LoginPage() {
             className="flex-1 bg-transparent text-sm outline-none text-green-dark placeholder-gray-400"
             placeholder="Masukkan password"
             disabled={loading}
+            form='login-form'
           />
         </div>
 
         <div className="text-right mb-6">
-          <button 
+          <button
             type="button"
             className="text-xs text-green-mid hover:text-green-dark font-medium cursor-pointer transition"
           >
             Lupa Password?
           </button>
         </div>
-
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className={`login-gradient-btn w-full py-3.5 rounded-[15px] font-semibold text-white text-base
+        <form id='login-form' onSubmit={handleLogin}>
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            className={`login-gradient-btn w-full py-3.5 rounded-[15px] font-semibold text-white text-base
             ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
-        >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Memproses...
-            </span>
-          ) : (
-            'Masuk'
-          )}
-        </button>
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Memproses...
+              </span>
+            ) : (
+              'Masuk'
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -7,10 +7,6 @@ import Header from '@/app/components/Header';
 import GuruAbsensiView from './components/GuruAbsensiView';
 import MuridAbsensiView from './components/MuridAbsensiView';
 
-// Dummy data untuk role (nanti diganti dengan data dari authentication)
-// Untuk testing: ganti 'Guru' menjadi 'Murid' untuk melihat tampilan murid
-const USER_ROLE = 'Murid';
-
 export default function AbsensiPage() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -18,20 +14,37 @@ export default function AbsensiPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulasi get user role dari auth context / localStorage
-    const getUserRole = () => {
-      // Dalam implementasi nyata, ambil dari:
-      // 1. Context API (useContext)
-      // 2. Zustand/Redux store
-      // 3. localStorage/sessionStorage
-      // 4. NextAuth.js session
-      const role = localStorage.getItem('userRole') || USER_ROLE;
-      return role as 'Murid' | 'Guru';
+    // Ambil data user dari API auth
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        
+        if (!response.ok) {
+          // Jika tidak terautentikasi, redirect ke login
+          router.push('/login');
+          return;
+        }
+
+        const data = await response.json();
+        
+        // Set role dari data user
+        if (data.user && data.user.role) {
+          setUserRole(data.user.role as 'Murid' | 'Guru');
+        } else {
+          // Fallback ke Murid jika role tidak ada
+          setUserRole('Murid');
+        }
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+        // Jika error, redirect ke login
+        router.push('/login');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    setUserRole(getUserRole());
-    setIsLoading(false);
-  }, []);
+    fetchUserRole();
+  }, [router]);
 
   if (isLoading) {
     return (
