@@ -5,7 +5,8 @@ import {
   getAbsensiByUsername,
   getAbsensiPending,
   addAbsensi,
-  updateAbsensiStatus
+  updateAbsensiStatus,
+  addNilaiMurid
 } from '@/lib/googleSheets';
 import { verifyToken } from '@/lib/auth';
 import { getGoogleSheetsClient } from '@/lib/googleSheets'; // Tambahkan ini
@@ -37,6 +38,10 @@ export async function GET(request: NextRequest) {
 
     if (type === 'pending' && user.role === 'Guru') {
       const pending = await getAbsensiPending();
+      console.log('📊 Pending data with rowIndex:', pending.map(p => ({
+        username: p.username,
+        rowIndex: p.rowIndex
+      })));
       return NextResponse.json({ absensi: pending });
     }
 
@@ -56,19 +61,18 @@ export async function GET(request: NextRequest) {
       const sheet = doc.sheetsByIndex[5];
       const rows = await sheet.getRows();
 
-      // Ambil semua data dan urutkan dari yang terbaru
       const semuaAbsensi = rows
         .map(row => ({
           username: row.get('username'),
           tanggal: row.get('tanggal'),
           hari: row.get('hari'),
           jam: row.get('jam'),
+          mapel: row.get('mapel') || '-', // ✅ TAMBAHKAN INI
           status: row.get('status'),
           verifikasi_oleh: row.get('verifikasi_oleh') || '-',
-          rowIndex: row.rowIndex,
+          rowIndex: row.rowNumber,
         }))
         .sort((a, b) => {
-          // Urutkan dari tanggal terbaru
           return new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime();
         });
 
@@ -149,7 +153,7 @@ export async function POST(request: NextRequest) {
     const { action } = body;
 
     if (action === 'absen') {
-      const { tanggal, hari, jam } = body;
+      const { tanggal, hari, jam, mapel } = body;
 
       // ✅ CEK APAKAH SUDAH ABSEN HARI INI
       const existingAbsensi = await getAbsensiByUsername(user.username);
@@ -162,12 +166,21 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Lanjutkan tambah absensi
+      // ✅ VALIDASI MAPEL
+      if (!mapel) {
+        return NextResponse.json(
+          { error: 'Silakan pilih mata pelajaran' },
+          { status: 400 }
+        );
+      }
+
+      // Lanjutkan tambah absensi dengan mapel
       await addAbsensi({
         username: user.username,
         tanggal,
         hari,
         jam,
+        mapel, // ✅ Tambahkan mapel
         status: 'Pending',
         verifikasi_oleh: '-',
       });
@@ -176,17 +189,52 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'verifikasi' && user.role === 'Guru') {
-      const { rowIndex, status } = body;
+      const { rowIndex, status, mapel } = body;
+
+      // ✅ TAMBAHKAN LOG INI
+      console.log('🔍 VERIFIKASI - Detail:');
+      console.log('  rowIndex:', rowIndex);
+      console.log('  status:', status);
+      console.log('  mapel:', mapel);
+      console.log('  guru:', user.username);
 
       // Validasi status
       if (!['Hadir', 'Izin', 'Alpha'].includes(status)) {
         return NextResponse.json({ error: 'Status tidak valid' }, { status: 400 });
       }
 
+      // Update status absensi
       const result = await updateAbsensiStatus(rowIndex, status, user.username);
+
+      console.log('  result updateAbsensiStatus:', result); // ✅ TAMBAHKAN INI
 
       if (!result) {
         return NextResponse.json({ error: 'Gagal update status' }, { status: 500 });
+      }
+
+      // ✅ JIKA STATUS HADIR, TAMBAHKAN KE SHEET NILAI MURID
+      if (status === 'Hadir' && mapel) {
+        console.log('  ✅ Status HADIR, tambahkan ke Nilai Murid'); // ✅ TAMBAHKAN INI
+
+        // Ambil data absensi untuk mendapatkan tanggal dan hari
+        const doc = await getGoogleSheetsClient();
+        const sheet = doc.sheetsByIndex[5];
+        const rows = await sheet.getRows();
+        const row = rows.find(r => r.rowNumber === rowIndex);
+
+        console.log('  row ditemukan untuk Nilai Murid:', row ? '✅' : '❌'); // ✅ TAMBAHKAN INI
+
+        if (row) {
+          await addNilaiMurid({
+            username: row.get('username'),
+            tanggal: row.get('tanggal'),
+            hari: row.get('hari'),
+            mapel: mapel,
+            nilai: '-',
+            catatan: '-',
+          });
+          console.log('  ✅ Nilai Murid berhasil ditambahkan'); // ✅ TAMBAHKAN INI
+        }
       }
 
       return NextResponse.json({

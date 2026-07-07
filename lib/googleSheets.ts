@@ -31,7 +31,7 @@ export async function getMuridByUsername(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[0];
     const rows = await sheet.getRows();
-    
+
     const murid = rows.find(row => row.get('username') === username);
     if (!murid) return null;
 
@@ -55,7 +55,7 @@ export async function getUsers() {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[2];
     const rows = await sheet.getRows();
-    
+
     const users = rows.map(row => ({
       username: row.get('username'),
       password: row.get('password'),
@@ -80,7 +80,7 @@ export async function getJadwalMurid(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[3];
     const rows = await sheet.getRows();
-    
+
     const jadwal = rows
       .filter(row => row.get('username').toLowerCase() === username.toLowerCase())
       .map(row => ({
@@ -101,9 +101,9 @@ export async function getJadwalMapel(mingguKe: number, hari: string, program: st
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[4];
     const rows = await sheet.getRows();
-    
+
     const jadwal = rows
-      .filter(row => 
+      .filter(row =>
         parseInt(row.get('minggu_ke')) === mingguKe &&
         row.get('hari') === hari &&
         row.get('program') === program
@@ -126,13 +126,14 @@ export async function getAbsensiByUsername(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[5];
     const rows = await sheet.getRows();
-    
+
     const absensi = rows
       .filter(row => row.get('username').toLowerCase() === username.toLowerCase())
       .map(row => ({
         tanggal: row.get('tanggal'),
         hari: row.get('hari'),
         jam: row.get('jam'),
+        mapel: row.get('mapel') || '-', // ✅ Tambahkan mapel
         status: row.get('status'),
         verifikasi_oleh: row.get('verifikasi_oleh') || '-',
       }));
@@ -149,7 +150,7 @@ export async function getAbsensiPending() {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[5];
     const rows = await sheet.getRows();
-    
+
     const pending = rows
       .filter(row => row.get('status') === 'Pending')
       .map(row => ({
@@ -157,10 +158,13 @@ export async function getAbsensiPending() {
         tanggal: row.get('tanggal'),
         hari: row.get('hari'),
         jam: row.get('jam'),
+        mapel: row.get('mapel') || '-',
         status: row.get('status'),
         verifikasi_oleh: row.get('verifikasi_oleh') || '-',
-        rowIndex: row.rowIndex,
+        rowIndex: row.rowNumber, // ✅ PASTIKAN ADA
       }));
+
+    console.log('📊 getAbsensiPending - rowIndexes:', pending.map(p => p.rowIndex)); // ✅ TAMBAHKAN LOG
 
     return pending;
   } catch (error) {
@@ -174,6 +178,7 @@ export async function addAbsensi(data: {
   tanggal: string;
   hari: string;
   jam: string;
+  mapel: string; // ✅ Tambahkan mapel
   status: string;
   verifikasi_oleh: string;
 }) {
@@ -185,6 +190,7 @@ export async function addAbsensi(data: {
       tanggal: data.tanggal,
       hari: data.hari,
       jam: data.jam,
+      mapel: data.mapel, // ✅ Tambahkan mapel
       status: data.status,
       verifikasi_oleh: data.verifikasi_oleh,
     });
@@ -197,18 +203,36 @@ export async function addAbsensi(data: {
 
 export async function updateAbsensiStatus(rowIndex: number, status: string, verifikasi_oleh: string) {
   try {
+    console.log('🔍 updateAbsensiStatus - rowIndex:', rowIndex, 'status:', status, 'verifikasi_oleh:', verifikasi_oleh);
+    
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[5];
     const rows = await sheet.getRows();
-    const row = rows.find(r => r.rowIndex === rowIndex);
     
-    if (row) {
-      row.set('status', status);
-      row.set('verifikasi_oleh', verifikasi_oleh);
-      await row.save();
-      return true;
+    console.log('📊 Total rows di sheet:', rows.length);
+    console.log('📊 Available rowIndexes:', rows.map(r => r.rowNumber));
+    
+    // Cari row berdasarkan rowIndex
+    const row = rows.find(r => r.rowNumber === rowIndex);
+    
+    if (!row) {
+      console.error('❌ Row TIDAK ditemukan untuk rowIndex:', rowIndex);
+      return false;
     }
-    return false;
+    
+    console.log('✅ Row ditemukan:', {
+      username: row.get('username'),
+      status_lama: row.get('status'),
+      status_baru: status,
+      rowIndex: row.rowNumber
+    });
+    
+    row.set('status', status);
+    row.set('verifikasi_oleh', verifikasi_oleh);
+    await row.save();
+    
+    console.log('✅ Status berhasil diupdate!');
+    return true;
   } catch (error) {
     console.error('Error updating absensi:', error);
     throw new Error('Gagal mengupdate data absensi');
@@ -221,10 +245,10 @@ export async function getProfilByUsername(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[0]; // Sheet 1 - Data Murid
     const rows = await sheet.getRows();
-    
+
     // Cari data berdasarkan username
     const profilData = rows.find(row => row.get('username') === username);
-    
+
     if (!profilData) {
       return null;
     }
@@ -240,5 +264,32 @@ export async function getProfilByUsername(username: string) {
   } catch (error) {
     console.error('Error reading profil data:', error);
     throw new Error('Gagal membaca data profil dari spreadsheet');
+  }
+}
+
+// ===== SHEET 7: Nilai Murid =====
+export async function addNilaiMurid(data: {
+  username: string;
+  tanggal: string;
+  hari: string;
+  mapel: string;
+  nilai: string;
+  catatan: string;
+}) {
+  try {
+    const doc = await getGoogleSheetsClient();
+    const sheet = doc.sheetsByIndex[6]; // Sheet ke-7 (index 6)
+    await sheet.addRow({
+      username: data.username,
+      tanggal: data.tanggal,
+      hari: data.hari,
+      mapel: data.mapel,
+      nilai: data.nilai || '-',
+      catatan: data.catatan || '-',
+    });
+    return true;
+  } catch (error) {
+    console.error('Error adding nilai murid:', error);
+    throw new Error('Gagal menambahkan data nilai murid');
   }
 }

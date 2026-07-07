@@ -8,6 +8,7 @@ interface AbsensiPending {
   tanggal: string;
   hari: string;
   jam: string;
+  mapel: string;
   status: string;
   verifikasi_oleh: string;
   rowIndex: number;
@@ -18,6 +19,7 @@ interface AbsensiRiwayat {
   tanggal: string;
   hari: string;
   jam: string;
+  mapel: string;
   status: string;
   verifikasi_oleh: string;
 }
@@ -110,7 +112,7 @@ export default function GuruAbsensiView() {
     }
   };
 
-  const handleVerifikasi = async (rowIndex: number, status: string) => {
+  const handleVerifikasi = async (rowIndex: number, status: string, mapel: string) => {
     try {
       const response = await fetch('/api/absensi', {
         method: 'POST',
@@ -119,6 +121,7 @@ export default function GuruAbsensiView() {
           action: 'verifikasi',
           rowIndex,
           status,
+          mapel,
         }),
       });
 
@@ -304,15 +307,20 @@ export default function GuruAbsensiView() {
                 <th className="pb-3 font-medium">Kelas</th>
                 <th className="pb-3 font-medium">Tanggal</th>
                 <th className="pb-3 font-medium">Jam</th>
+                <th className="pb-3 font-medium">Mapel</th>
                 <th className="pb-3 font-medium">Status</th>
                 <th className="pb-3 font-medium text-center">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {activeTab === 'pending' ? (
-                // TAB PENDING
                 filteredPending.length > 0 ? (
                   filteredPending.map((item, index) => {
+                    console.log('📊 Item Pending:', {
+                      username: item.username,
+                      rowIndex: item.rowIndex,
+                      mapel: item.mapel
+                    });
                     const murid = muridData[item.username];
                     return (
                       <tr key={index} className="border-b border-[#f0f7f3] last:border-0 hover:bg-[#f8fbf9] transition-colors">
@@ -323,9 +331,10 @@ export default function GuruAbsensiView() {
                         <td className="py-3 text-gray-600">{murid?.kelas || '-'}</td>
                         <td className="py-3 text-gray-600">{item.tanggal}</td>
                         <td className="py-3 text-gray-600">{item.jam}</td>
+                        <td className="py-3 text-gray-600">{item.mapel || '-'}</td>
                         <td className="py-3">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
-                            ${statusColors[item.status as keyof typeof statusColors]}`}
+                    ${statusColors[item.status as keyof typeof statusColors]}`}
                           >
                             {item.status}
                           </span>
@@ -334,21 +343,21 @@ export default function GuruAbsensiView() {
                           {item.status === 'Pending' ? (
                             <div className="flex items-center justify-center gap-2">
                               <button
-                                onClick={() => handleVerifikasi(item.rowIndex, 'Hadir')}
+                                onClick={() => handleVerifikasi(item.rowIndex, 'Hadir', item.mapel)}
                                 className="p-1.5 rounded-lg hover:bg-green-50 transition text-green-600"
                                 title="Hadir"
                               >
                                 <CheckCircle className="w-5 h-5" />
                               </button>
                               <button
-                                onClick={() => handleVerifikasi(item.rowIndex, 'Izin')}
+                                onClick={() => handleVerifikasi(item.rowIndex, 'Izin', item.mapel)}
                                 className="p-1.5 rounded-lg hover:bg-blue-50 transition text-blue-600"
                                 title="Izin"
                               >
                                 <Clock className="w-5 h-5" />
                               </button>
                               <button
-                                onClick={() => handleVerifikasi(item.rowIndex, 'Alpha')}
+                                onClick={() => handleVerifikasi(item.rowIndex, 'Alpha', item.mapel)}
                                 className="p-1.5 rounded-lg hover:bg-red-50 transition text-red-600"
                                 title="Alpha"
                               >
@@ -366,13 +375,12 @@ export default function GuruAbsensiView() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500">
+                    <td colSpan={8} className="py-8 text-center text-gray-500">
                       Tidak ada data pending
                     </td>
                   </tr>
                 )
               ) : (
-                // TAB HISTORY
                 filteredHistory.length > 0 ? (
                   filteredHistory.map((item, index) => {
                     const murid = muridData[item.username];
@@ -385,9 +393,10 @@ export default function GuruAbsensiView() {
                         <td className="py-3 text-gray-600">{murid?.kelas || '-'}</td>
                         <td className="py-3 text-gray-600">{item.tanggal}</td>
                         <td className="py-3 text-gray-600">{item.jam}</td>
+                        <td className="py-3 text-gray-600">{item.mapel || '-'}</td>
                         <td className="py-3">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
-                            ${statusColors[item.status as keyof typeof statusColors]}`}
+                    ${statusColors[item.status as keyof typeof statusColors]}`}
                           >
                             {item.status}
                           </span>
@@ -400,7 +409,7 @@ export default function GuruAbsensiView() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500">
+                    <td colSpan={8} className="py-8 text-center text-gray-500">
                       Belum ada riwayat verifikasi
                     </td>
                   </tr>
