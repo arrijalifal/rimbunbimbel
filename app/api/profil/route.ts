@@ -4,9 +4,23 @@ import { verifyToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    // Ambil token dari cookie
     const token = request.cookies.get('token')?.value;
-    
+    const { searchParams } = new URL(request.url);
+    const username = searchParams.get('username');
+
+    // Jika ada parameter username, ambil data profil untuk username tersebut
+    if (username) {
+      const profil = await getProfilByUsername(username);
+      if (!profil) {
+        return NextResponse.json(
+          { error: 'Data profil tidak ditemukan' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ profil });
+    }
+
+    // Jika tidak ada parameter, ambil dari token
     if (!token) {
       return NextResponse.json(
         { error: 'Tidak terautentikasi' },
@@ -14,7 +28,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verify token
     const user = verifyToken(token);
     if (!user) {
       return NextResponse.json(
@@ -23,9 +36,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Ambil data profil berdasarkan username
     const profil = await getProfilByUsername(user.username);
-    
     if (!profil) {
       return NextResponse.json(
         { error: 'Data profil tidak ditemukan' },

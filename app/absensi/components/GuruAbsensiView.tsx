@@ -1,44 +1,50 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Users, CheckCircle, XCircle, Clock, UserCheck, UserX, UserMinus, ChevronDown, Check, X } from 'lucide-react';
+import { Search, Users, Clock, UserCheck, UserX, UserMinus, CheckCircle, XCircle, Check, X, History } from 'lucide-react';
 
-// Dummy data guru tetap
-const teachersData = [
-  { id: 1, name: 'Dr. Ahmad Fauzi, M.Pd.' },
-  { id: 2, name: 'Dra. Siti Rahayu, M.Si.' },
-  { id: 3, name: 'Budi Santoso, S.Pd.' },
-  { id: 4, name: 'Dewi Lestari, S.Si.' },
-  { id: 5, name: 'Dr. Rizky Ramadhan, M.Kom.' },
-];
+interface AbsensiPending {
+  username: string;
+  tanggal: string;
+  hari: string;
+  jam: string;
+  status: string;
+  verifikasi_oleh: string;
+  rowIndex: number;
+}
 
-// Dummy data siswa yang minta konfirmasi hadir hari ini
-const studentsData = [
-  { id: 1, name: 'Rina Permata', kelas: 'XII IPA 2', status: 'Pending', waktu: '15:00', teacher: null },
-  { id: 2, name: 'Budi Santoso', kelas: 'XII IPA 2', status: 'Pending', waktu: '15:05', teacher: null },
-  { id: 3, name: 'Siti Rahayu', kelas: 'XII IPA 2', status: 'Pending', waktu: '15:10', teacher: null },
-  { id: 4, name: 'Agus Wijaya', kelas: 'XII IPA 2', status: 'Pending', waktu: '15:12', teacher: null },
-  { id: 5, name: 'Dewi Lestari', kelas: 'XII IPA 2', status: 'Pending', waktu: '15:15', teacher: null },
-  { id: 6, name: 'Rizky Ramadhan', kelas: 'XII IPA 2', status: 'Pending', waktu: '15:18', teacher: null },
-  { id: 7, name: 'Maya Sari', kelas: 'XII IPA 2', status: 'Pending', waktu: '15:20', teacher: null },
-  { id: 8, name: 'Doni Pratama', kelas: 'XII IPA 2', status: 'Pending', waktu: '15:25', teacher: null },
-];
+interface AbsensiRiwayat {
+  username: string;
+  tanggal: string;
+  hari: string;
+  jam: string;
+  status: string;
+  verifikasi_oleh: string;
+}
 
-// Status badge colors
+interface MuridData {
+  username: string;
+  nama: string;
+  kelas: string;
+}
+
 const statusColors = {
-  Pending: 'bg-gray-100 text-gray-600',
+  Pending: 'bg-yellow-100 text-yellow-700',
   Hadir: 'bg-green-100 text-green-700',
-  Izin: 'bg-yellow-100 text-yellow-700',
+  Izin: 'bg-blue-100 text-blue-700',
   Alpha: 'bg-red-100 text-red-700',
 };
 
 export default function GuruAbsensiView() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [students, setStudents] = useState(studentsData);
-  const [selectedStatus, setSelectedStatus] = useState<'Semua' | 'Pending' | 'Hadir' | 'Izin' | 'Alpha'>('Semua');
+  const [pendingList, setPendingList] = useState<AbsensiPending[]>([]);
+  const [historyList, setHistoryList] = useState<AbsensiRiwayat[]>([]);
+  const [muridData, setMuridData] = useState<Record<string, MuridData>>({});
   const [todayDate, setTodayDate] = useState('');
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const [selectedTeacher, setSelectedTeacher] = useState<Record<number, number>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<'Semua' | 'Pending' | 'Hadir' | 'Izin' | 'Alpha'>('Semua');
+  const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
   useEffect(() => {
     const now = new Date();
@@ -50,128 +56,144 @@ export default function GuruAbsensiView() {
         day: 'numeric',
       })
     );
+    fetchData();
   }, []);
 
-  // Filter students based on search and status
-  const filteredStudents = students.filter(student => {
-    const matchSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        student.kelas.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchStatus = selectedStatus === 'Semua' || student.status === selectedStatus;
-    return matchSearch && matchStatus;
-  });
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError('');
 
-  // Hitung statistik
-  const totalStudents = students.length;
-  const pendingCount = students.filter(s => s.status === 'Pending').length;
-  const hadirCount = students.filter(s => s.status === 'Hadir').length;
-  const izinCount = students.filter(s => s.status === 'Izin').length;
-  const alphaCount = students.filter(s => s.status === 'Alpha').length;
+    try {
+      // ✅ Ambil SEMUA data absensi (bukan hanya pending)
+      const semuaRes = await fetch('/api/absensi?type=semua');
+      if (!semuaRes.ok) throw new Error('Gagal ambil data absensi');
+      const semuaData = await semuaRes.json();
 
-  // Handle konfirmasi kehadiran
-  const handleConfirmAttendance = (studentId: number, teacherId: number | null) => {
-    if (teacherId === null) {
-      // Jika belum pilih guru, tampilkan alert
-      alert('Silakan pilih guru terlebih dahulu!');
-      return;
+      // Filter berdasarkan status untuk ditampilkan
+      const allAbsensi = semuaData.absensi || [];
+
+      // Pending = status 'Pending'
+      const pending = allAbsensi.filter((a: any) => a.status === 'Pending');
+      // History = semua status selain 'Pending'
+      const history = allAbsensi.filter((a: any) => a.status !== 'Pending');
+
+      setPendingList(pending);
+      setHistoryList(history);
+
+      // Ambil data murid untuk setiap username
+      const allUsernames = [...new Set(allAbsensi.map((a: any) => a.username))];
+      const muridMap: Record<string, MuridData> = {};
+
+      for (const username of allUsernames) {
+        try {
+          const profilRes = await fetch(`/api/profil?username=${username}`);
+          if (profilRes.ok) {
+            const profilData = await profilRes.json();
+            if (profilData.profil) {
+              muridMap[username] = {
+                username: profilData.profil.username,
+                nama: profilData.profil.nama,
+                kelas: profilData.profil.kelas,
+              };
+            }
+          }
+        } catch (err) {
+          console.error(`Error fetching profil for ${username}:`, err);
+        }
+      }
+      setMuridData(muridMap);
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    setStudents(prevStudents =>
-      prevStudents.map(student =>
-        student.id === studentId
-          ? {
-              ...student,
-              status: 'Hadir',
-              teacher: teacherId,
-            }
-          : student
-      )
+  const handleVerifikasi = async (rowIndex: number, status: string) => {
+    try {
+      const response = await fetch('/api/absensi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'verifikasi',
+          rowIndex,
+          status,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Gagal verifikasi');
+
+      // Refresh data
+      await fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal verifikasi');
+    }
+  };
+
+  // Filter berdasarkan search dan status
+  const filterList = (list: any[]) => {
+    return list.filter(item => {
+      const murid = muridData[item.username];
+      const matchSearch = murid?.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        murid?.kelas?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.username.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchStatus = selectedStatus === 'Semua' || item.status === selectedStatus;
+      return matchSearch && matchStatus;
+    });
+  };
+
+  const filteredPending = filterList(pendingList);
+  const filteredHistory = filterList(historyList);
+
+  const totalPending = pendingList.length;
+  const hadirCount = pendingList.filter(s => s.status === 'Hadir').length;
+  const pendingCount = pendingList.filter(s => s.status === 'Pending').length;
+  const izinCount = pendingList.filter(s => s.status === 'Izin').length;
+  const alphaCount = pendingList.filter(s => s.status === 'Alpha').length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-green-mid border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-500">Memuat data...</p>
+        </div>
+      </div>
     );
-    setOpenDropdown(null);
-  };
-
-  // Handle izin
-  const handleIzin = (studentId: number) => {
-    setStudents(prevStudents =>
-      prevStudents.map(student =>
-        student.id === studentId
-          ? {
-              ...student,
-              status: 'Izin',
-              teacher: null,
-            }
-          : student
-      )
-    );
-  };
-
-  // Handle alpha
-  const handleAlpha = (studentId: number) => {
-    setStudents(prevStudents =>
-      prevStudents.map(student =>
-        student.id === studentId
-          ? {
-              ...student,
-              status: 'Alpha',
-              teacher: null,
-            }
-          : student
-      )
-    );
-  };
-
-  // Reset status ke Pending
-  const handleResetStatus = (studentId: number) => {
-    setStudents(prevStudents =>
-      prevStudents.map(student =>
-        student.id === studentId
-          ? {
-              ...student,
-              status: 'Pending',
-              teacher: null,
-            }
-          : student
-      )
-    );
-  };
-
-  // Get teacher name by id
-  const getTeacherName = (teacherId: number | null) => {
-    if (!teacherId) return '-';
-    const teacher = teachersData.find(t => t.id === teacherId);
-    return teacher ? teacher.name : '-';
-  };
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header dengan tanggal */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1a4731]">📋 Konfirmasi Absensi</h2>
+          <h2 className="text-2xl font-bold text-[#1a4731]">📋 Verifikasi Absensi</h2>
           <p className="text-sm text-gray-500 mt-1">{todayDate}</p>
         </div>
         <div className="text-sm text-gray-500">
-          <span className="font-medium text-green-dark">{pendingCount}</span> siswa menunggu konfirmasi
+          <span className="font-medium text-yellow-600">{pendingCount}</span> siswa menunggu verifikasi
         </div>
       </div>
 
-      {/* Statistik Cards */}
+      {/* Statistik */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">Total</p>
-              <p className="text-2xl font-bold text-gray-800">{totalStudents}</p>
-            </div>
-            <Users className="w-8 h-8 text-blue-500 opacity-50" />
-          </div>
-        </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-gray-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500">Pending</p>
-              <p className="text-2xl font-bold text-gray-600">{pendingCount}</p>
+              <p className="text-xs text-gray-500">Total</p>
+              <p className="text-2xl font-bold text-gray-800">{totalPending}</p>
             </div>
-            <Clock className="w-8 h-8 text-gray-500 opacity-50" />
+            <Users className="w-8 h-8 text-gray-500 opacity-50" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-500">Pending</p>
+              <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
+            </div>
+            <Clock className="w-8 h-8 text-yellow-500 opacity-50" />
           </div>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
@@ -183,13 +205,13 @@ export default function GuruAbsensiView() {
             <UserCheck className="w-8 h-8 text-green-500 opacity-50" />
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500">Izin</p>
-              <p className="text-2xl font-bold text-yellow-600">{izinCount}</p>
+              <p className="text-2xl font-bold text-blue-600">{izinCount}</p>
             </div>
-            <UserMinus className="w-8 h-8 text-yellow-500 opacity-50" />
+            <UserMinus className="w-8 h-8 text-blue-500 opacity-50" />
           </div>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
@@ -203,15 +225,48 @@ export default function GuruAbsensiView() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('pending')}
+          className={`px-4 py-2 text-sm font-medium transition-all border-b-2 ${activeTab === 'pending'
+            ? 'border-green-500 text-green-700'
+            : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+        >
+          <span className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Menunggu Verifikasi
+            {pendingCount > 0 && (
+              <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs">
+                {pendingCount}
+              </span>
+            )}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`px-4 py-2 text-sm font-medium transition-all border-b-2 ${activeTab === 'history'
+            ? 'border-green-500 text-green-700'
+            : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+        >
+          <span className="flex items-center gap-2">
+            <History className="w-4 h-4" />
+            Riwayat Verifikasi
+          </span>
+        </button>
+      </div>
+
       {/* Daftar Siswa */}
       <div className="bg-white rounded-2xl p-6 shadow-md">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
           <h3 className="font-semibold text-[#1a4731] text-lg">
-            👨‍🎓 Daftar Siswa ({filteredStudents.length})
+            👨‍🎓 {activeTab === 'pending' ? 'Menunggu Verifikasi' : 'Riwayat Verifikasi'}
+            ({activeTab === 'pending' ? filteredPending.length : filteredHistory.length})
           </h3>
-          
+
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -222,16 +277,15 @@ export default function GuruAbsensiView() {
                 className="pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-mid/20 focus:border-green-mid w-full sm:w-48"
               />
             </div>
-            
-            {/* Filter Status */}
+
             <div className="flex gap-1 flex-wrap">
               {['Semua', 'Pending', 'Hadir', 'Izin', 'Alpha'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setSelectedStatus(status as any)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition
-                    ${selectedStatus === status 
-                      ? 'bg-green-mid text-white' 
+                    ${selectedStatus === status
+                      ? 'bg-green-mid text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 >
                   {status}
@@ -248,130 +302,109 @@ export default function GuruAbsensiView() {
                 <th className="pb-3 font-medium">No</th>
                 <th className="pb-3 font-medium">Nama Siswa</th>
                 <th className="pb-3 font-medium">Kelas</th>
-                <th className="pb-3 font-medium">Waktu</th>
+                <th className="pb-3 font-medium">Tanggal</th>
+                <th className="pb-3 font-medium">Jam</th>
                 <th className="pb-3 font-medium">Status</th>
-                <th className="pb-3 font-medium">Guru</th>
                 <th className="pb-3 font-medium text-center">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {filteredStudents.length > 0 ? (
-                filteredStudents.map((student, index) => (
-                  <tr key={student.id} className="border-b border-[#f0f7f3] last:border-0 hover:bg-[#f8fbf9] transition-colors">
-                    <td className="py-3 text-gray-500">{index + 1}</td>
-                    <td className="py-3 font-medium text-gray-700">{student.name}</td>
-                    <td className="py-3 text-gray-600">{student.kelas}</td>
-                    <td className="py-3 text-gray-500">{student.waktu}</td>
-                    <td className="py-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
-                        ${statusColors[student.status as keyof typeof statusColors]}`}
-                      >
-                        {student.status}
-                      </span>
-                    </td>
-                    <td className="py-3 text-gray-500">
-                      {student.teacher ? getTeacherName(student.teacher) : '-'}
-                    </td>
-                    <td className="py-3">
-                      {student.status === 'Pending' ? (
-                        <div className="flex items-center justify-center gap-2">
-                          {/* Dropdown Pilih Guru */}
-                          <div className="relative">
-                            <button
-                              onClick={() => setOpenDropdown(openDropdown === student.id ? null : student.id)}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition whitespace-nowrap"
-                            >
-                              Pilih Guru
-                              <ChevronDown className={`w-3 h-3 transition-transform ${openDropdown === student.id ? 'rotate-180' : ''}`} />
-                            </button>
-                            
-                            {openDropdown === student.id && (
-                              <div className="absolute z-10 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 max-h-48 overflow-y-auto">
-                                {teachersData.map((teacher) => (
-                                  <button
-                                    key={teacher.id}
-                                    onClick={() => {
-                                      setSelectedTeacher(prev => ({
-                                        ...prev,
-                                        [student.id]: teacher.id
-                                      }));
-                                    }}
-                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition flex items-center justify-between
-                                      ${selectedTeacher[student.id] === teacher.id ? 'bg-green-50' : ''}`}
-                                  >
-                                    <span>{teacher.name}</span>
-                                    {selectedTeacher[student.id] === teacher.id && (
-                                      <Check className="w-4 h-4 text-green-600" />
-                                    )}
-                                  </button>
-                                ))}
-                                <div className="border-t border-gray-100 mt-1 pt-1">
-                                  <button
-                                    onClick={() => {
-                                      setSelectedTeacher(prev => ({
-                                        ...prev,
-                                        [student.id]: 0
-                                      }));
-                                    }}
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 transition"
-                                  >
-                                    ✕ Batal pilih
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Tombol Konfirmasi */}
-                          <button
-                            onClick={() => handleConfirmAttendance(student.id, selectedTeacher[student.id] || null)}
-                            className="p-1.5 rounded-lg hover:bg-green-50 transition text-green-600"
-                            title="Konfirmasi Hadir"
+              {activeTab === 'pending' ? (
+                // TAB PENDING
+                filteredPending.length > 0 ? (
+                  filteredPending.map((item, index) => {
+                    const murid = muridData[item.username];
+                    return (
+                      <tr key={index} className="border-b border-[#f0f7f3] last:border-0 hover:bg-[#f8fbf9] transition-colors">
+                        <td className="py-3 text-gray-500">{index + 1}</td>
+                        <td className="py-3 font-medium text-gray-700">
+                          {murid?.nama || item.username}
+                        </td>
+                        <td className="py-3 text-gray-600">{murid?.kelas || '-'}</td>
+                        <td className="py-3 text-gray-600">{item.tanggal}</td>
+                        <td className="py-3 text-gray-600">{item.jam}</td>
+                        <td className="py-3">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
+                            ${statusColors[item.status as keyof typeof statusColors]}`}
                           >
-                            <CheckCircle className="w-5 h-5" />
-                          </button>
-
-                          {/* Tombol Izin */}
-                          <button
-                            onClick={() => handleIzin(student.id)}
-                            className="p-1.5 rounded-lg hover:bg-yellow-50 transition text-yellow-600"
-                            title="Izin"
-                          >
-                            <Clock className="w-5 h-5" />
-                          </button>
-
-                          {/* Tombol Alpha */}
-                          <button
-                            onClick={() => handleAlpha(student.id)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 transition text-red-600"
-                            title="Alpha"
-                          >
-                            <XCircle className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="text-xs text-gray-400">
-                            {student.status === 'Hadir' ? `✓ ${getTeacherName(student.teacher)}` : `✓ ${student.status}`}
+                            {item.status}
                           </span>
-                          <button
-                            onClick={() => handleResetStatus(student.id)}
-                            className="p-1 rounded-lg hover:bg-gray-100 transition text-gray-400"
-                            title="Reset status"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                        </td>
+                        <td className="py-3">
+                          {item.status === 'Pending' ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleVerifikasi(item.rowIndex, 'Hadir')}
+                                className="p-1.5 rounded-lg hover:bg-green-50 transition text-green-600"
+                                title="Hadir"
+                              >
+                                <CheckCircle className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => handleVerifikasi(item.rowIndex, 'Izin')}
+                                className="p-1.5 rounded-lg hover:bg-blue-50 transition text-blue-600"
+                                title="Izin"
+                              >
+                                <Clock className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => handleVerifikasi(item.rowIndex, 'Alpha')}
+                                className="p-1.5 rounded-lg hover:bg-red-50 transition text-red-600"
+                                title="Alpha"
+                              >
+                                <XCircle className="w-5 h-5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400">
+                              ✓ Diverifikasi oleh {item.verifikasi_oleh}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-gray-500">
+                      Tidak ada data pending
                     </td>
                   </tr>
-                ))
+                )
               ) : (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-500">
-                    Tidak ada siswa yang ditemukan
-                  </td>
-                </tr>
+                // TAB HISTORY
+                filteredHistory.length > 0 ? (
+                  filteredHistory.map((item, index) => {
+                    const murid = muridData[item.username];
+                    return (
+                      <tr key={index} className="border-b border-[#f0f7f3] last:border-0 hover:bg-[#f8fbf9] transition-colors">
+                        <td className="py-3 text-gray-500">{index + 1}</td>
+                        <td className="py-3 font-medium text-gray-700">
+                          {murid?.nama || item.username}
+                        </td>
+                        <td className="py-3 text-gray-600">{murid?.kelas || '-'}</td>
+                        <td className="py-3 text-gray-600">{item.tanggal}</td>
+                        <td className="py-3 text-gray-600">{item.jam}</td>
+                        <td className="py-3">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
+                            ${statusColors[item.status as keyof typeof statusColors]}`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="py-3 text-center text-gray-500 text-xs">
+                          {item.verifikasi_oleh !== '-' ? `✓ ${item.verifikasi_oleh}` : '-'}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-gray-500">
+                      Belum ada riwayat verifikasi
+                    </td>
+                  </tr>
+                )
               )}
             </tbody>
           </table>
