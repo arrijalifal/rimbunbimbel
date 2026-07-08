@@ -273,6 +273,7 @@ export async function addNilaiMurid(data: {
   tanggal: string;
   hari: string;
   mapel: string;
+  pengajar: string; // ✅ Tambahkan ini
   nilai: string;
   catatan: string;
 }) {
@@ -284,6 +285,7 @@ export async function addNilaiMurid(data: {
       tanggal: data.tanggal,
       hari: data.hari,
       mapel: data.mapel,
+      pengajar: data.pengajar, // ✅ Tambahkan ini
       nilai: data.nilai || '-',
       catatan: data.catatan || '-',
     });

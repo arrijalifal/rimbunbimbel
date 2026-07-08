@@ -129,6 +129,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ absensi: riwayat });
     }
 
+    if (type === 'jadwal-mapel') {
+      const minggu = parseInt(searchParams.get('minggu') || '1');
+      const program = searchParams.get('program') || '';
+
+      const doc = await getGoogleSheetsClient();
+      const sheet = doc.sheetsByIndex[4]; // Sheet Jadwal Mapel
+      const rows = await sheet.getRows();
+
+      const jadwal = rows
+        .filter(row =>
+          parseInt(row.get('minggu_ke')) === minggu &&
+          row.get('program') === program
+        )
+        .map(row => ({
+          minggu_ke: parseInt(row.get('minggu_ke')),
+          hari: row.get('hari'),
+          program: row.get('program'),
+          mapel_1: row.get('mapel_1'),
+          mapel_2: row.get('mapel_2'),
+        }));
+
+      return NextResponse.json({ jadwal });
+    }
+
     return NextResponse.json({ error: 'Parameter tidak valid' }, { status: 400 });
   } catch (error) {
     console.error('Error fetching absensi:', error);
@@ -230,6 +254,7 @@ export async function POST(request: NextRequest) {
             tanggal: row.get('tanggal'),
             hari: row.get('hari'),
             mapel: mapel,
+            pengajar: user.username,
             nilai: '-',
             catatan: '-',
           });

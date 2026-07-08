@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -18,7 +19,8 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-const menuItems = [
+// Semua menu (tanpa filter)
+const allMenuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { id: 'absensi', label: 'Absensi', icon: CalendarCheck, path: '/absensi' },
   { id: 'jadwal', label: 'Jadwal', icon: Clock, path: '/jadwal' },
@@ -27,9 +29,31 @@ const menuItems = [
   { id: 'pengumuman', label: 'Pengumuman', icon: Megaphone, path: '/pengumuman' },
 ];
 
+// Menu yang hanya untuk Murid
+const muridOnlyMenu = ['jadwal'];
+
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const [userRole, setUserRole] = useState<'Murid' | 'Guru' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          setUserRole(data.user?.role || 'Murid');
+        }
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUserRole();
+  }, []);
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -38,26 +62,61 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      // Panggil API logout
       const response = await fetch('/api/logout', { 
         method: 'POST' 
       });
       
       if (response.ok) {
-        // Redirect ke login
         router.push('/login');
-        router.refresh(); // Refresh untuk update middleware
+        router.refresh();
         onClose();
       }
     } catch (error) {
       console.error('Logout error:', error);
-      // Fallback: redirect manual
       router.push('/login');
       router.refresh();
     }
   };
 
   const isActive = (path: string) => pathname === path;
+
+  // ✅ Filter menu berdasarkan role
+  const getMenuItems = () => {
+    if (userRole === 'Guru') {
+      // Sembunyikan menu yang hanya untuk murid
+      return allMenuItems.filter(item => !muridOnlyMenu.includes(item.id));
+    }
+    return allMenuItems;
+  };
+
+  const menuItems = getMenuItems();
+
+  if (isLoading) {
+    return (
+      <>
+        {isOpen && (
+          <div 
+            className="fixed inset-0 bg-black/30 z-30 lg:hidden"
+            onClick={onClose}
+          />
+        )}
+        <aside
+          className={`fixed lg:static w-64 h-screen z-40 flex-shrink-0 flex flex-col py-6 px-4 transition-transform duration-300 overflow-y-auto bg-[#1a4731]
+            ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        >
+          <div className="flex items-center gap-3 mb-8 px-2">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white font-bold">
+              RB
+            </div>
+            <span className="text-lg font-bold text-white">Rimbun Bimbel</span>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+          </div>
+        </aside>
+      </>
+    );
+  }
 
   return (
     <>
