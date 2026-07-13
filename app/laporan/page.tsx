@@ -285,16 +285,14 @@ export default function LaporanPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-[#f4faf6]">
+      <div className="flex h-screen overflow-hidden bg-[#f4faf6]">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-        <div className="flex-1 lg:ml-0 min-h-screen">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden lg:ml-0">
           <Header onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-          <main className="p-4 lg:p-8 max-w-6xl mx-auto">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <div className="w-12 h-12 border-4 border-green-mid border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <p className="mt-4 text-gray-500">Memuat data...</p>
-              </div>
+          <main className="flex-1 p-4 lg:p-8 max-w-6xl w-full mx-auto flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-green-mid border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="mt-4 text-gray-500">Memuat data...</p>
             </div>
           </main>
         </div>
@@ -305,14 +303,14 @@ export default function LaporanPage() {
   // ==================== TAMPILAN GURU ====================
   if (userRole === 'Guru') {
     return (
-      <div className="flex min-h-screen bg-[#f4faf6]">
+      <div className="flex h-screen overflow-hidden bg-[#f4faf6]">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-        <div className="flex-1 lg:ml-0 min-h-screen">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden lg:ml-0">
           <Header onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-          <main className="p-4 lg:p-8 max-w-6xl mx-auto">
-            <div className="space-y-6">
+          <main className="flex-1 p-4 lg:p-8 max-w-6xl w-full mx-auto flex flex-col overflow-hidden">
+            <div className="flex flex-col h-full gap-5">
               {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                 <div>
                   <h1 className="text-2xl font-bold text-[#1a4731] flex items-center gap-2">
                     <BarChart3 className="w-7 h-7 text-green-mid" />
@@ -325,7 +323,7 @@ export default function LaporanPage() {
               </div>
 
               {/* Statistik */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
                 <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
                   <div className="flex items-center justify-between">
                     <div>
@@ -365,7 +363,7 @@ export default function LaporanPage() {
               </div>
 
               {/* Filter */}
-              <div className="bg-white rounded-2xl p-4 shadow-md">
+              <div className="bg-white rounded-2xl p-4 shadow-md shrink-0">
                 <div className="flex flex-col md:flex-row md:items-center gap-3">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -407,11 +405,11 @@ export default function LaporanPage() {
               </div>
 
               {/* Tabel Penilaian Guru */}
-              <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-                <div className="overflow-x-auto">
+              <div className="bg-white rounded-2xl shadow-md flex flex-col flex-1 overflow-hidden">
+                <div className="overflow-auto flex-1">
                   <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-[#f0f7f3] border-b-2 border-[#e8f3ec]">
+                    <thead className="sticky top-0 z-10 bg-[#f0f7f3]">
+                      <tr className="border-b-2 border-[#e8f3ec]">
                         <th className="px-4 py-3 text-left font-semibold text-[#1a4731]">No</th>
                         <th className="px-4 py-3 text-left font-semibold text-[#1a4731]">Murid</th>
                         <th className="px-4 py-3 text-left font-semibold text-[#1a4731]">Kelas</th>
@@ -438,7 +436,6 @@ export default function LaporanPage() {
                           const isEditing = editingRow === rowKey;
                           const nilaiNum = parseInt(item.nilai) || 0;
 
-                          // ✅ Cek apakah guru ini yang mengajar
                           const canEdit = userRole === 'Guru' && item.pengajar === currentUser?.username;
 
                           return (
@@ -531,7 +528,7 @@ export default function LaporanPage() {
                     </tbody>
                   </table>
                 </div>
-                <div className="px-4 py-3 bg-[#f8fbf9] border-t border-[#e8f3ec] text-xs text-gray-500">
+                <div className="px-4 py-3 bg-[#f8fbf9] border-t border-[#e8f3ec] text-xs text-gray-500 shrink-0">
                   Menampilkan {filteredData.length} data
                 </div>
               </div>
@@ -544,14 +541,14 @@ export default function LaporanPage() {
 
   // ==================== TAMPILAN MURID ====================
   return (
-    <div className="flex min-h-screen bg-[#f4faf6]">
+    <div className="flex h-screen overflow-hidden bg-[#f4faf6]">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <div className="flex-1 lg:ml-0 min-h-screen">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden lg:ml-0">
         <Header onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <main className="p-4 lg:p-8 max-w-6xl mx-auto">
-          <div className="space-y-6">
+        <main className="flex-1 p-4 lg:p-8 max-w-6xl w-full mx-auto flex flex-col overflow-hidden">
+          <div className="flex flex-col h-full gap-5">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
               <div>
                 <h1 className="text-2xl font-bold text-[#1a4731] flex items-center gap-2">
                   <BarChart3 className="w-7 h-7 text-green-mid" />
@@ -568,7 +565,7 @@ export default function LaporanPage() {
             </div>
 
             {/* Statistik */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
               <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
                 <div className="flex items-center justify-between">
                   <div>
@@ -611,7 +608,7 @@ export default function LaporanPage() {
             </div>
 
             {/* Filter */}
-            <div className="bg-white rounded-2xl p-4 shadow-md">
+            <div className="bg-white rounded-2xl p-4 shadow-md shrink-0">
               <div className="flex flex-col md:flex-row md:items-center gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -639,11 +636,11 @@ export default function LaporanPage() {
             </div>
 
             {/* Tabel Laporan Murid */}
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-              <div className="overflow-x-auto">
+            <div className="bg-white rounded-2xl shadow-md flex flex-col flex-1 overflow-hidden">
+              <div className="overflow-auto flex-1">
                 <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-[#f0f7f3] border-b-2 border-[#e8f3ec]">
+                  <thead className="sticky top-0 z-10 bg-[#f0f7f3]">
+                    <tr className="border-b-2 border-[#e8f3ec]">
                       <th className="px-4 py-3 text-left font-semibold text-[#1a4731]">
                         <button onClick={() => handleSort('tanggal')} className="flex items-center gap-1 hover:text-green-mid">
                           Tanggal {sortField === 'tanggal' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
@@ -711,7 +708,7 @@ export default function LaporanPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="px-4 py-3 bg-[#f8fbf9] border-t border-[#e8f3ec] flex justify-between items-center text-xs text-gray-500">
+              <div className="px-4 py-3 bg-[#f8fbf9] border-t border-[#e8f3ec] flex justify-between items-center text-xs text-gray-500 shrink-0">
                 <span>Menampilkan {filteredData.length} data</span>
                 {filteredData.length > 0 && (
                   <span>Rata-rata: {Math.round(filteredData.reduce((acc, item) => acc + (parseInt(item.nilai) || 0), 0) / filteredData.length)}</span>
