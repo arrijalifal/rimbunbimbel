@@ -203,11 +203,11 @@ export default function DashboardPage() {
   // ==================== TAMPILAN GURU ====================
   if (user?.role === 'Guru') {
     return (
-      <div className="flex h-screen overflow-hidden bg-[#f4faf6]">
+      <div className="flex min-h-screen bg-[#f4faf6]">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-        <div className="flex-1 flex flex-col h-screen overflow-hidden lg:ml-0">
+        <div className="flex-1 flex flex-col min-h-screen overflow-hidden lg:ml-0">
           <Header onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-          <main className="flex-1 p-4 lg:p-8 max-w-6xl w-full mx-auto flex flex-col overflow-hidden">
+          <main className="flex-1 p-4 lg:p-8 max-w-6xl w-full mx-auto flex flex-col overflow-y-auto">
             <div className="flex flex-col h-full gap-5">
               {/* Header */}
               <div className="mb-4 shrink-0">
@@ -349,11 +349,11 @@ export default function DashboardPage() {
 
   // ==================== TAMPILAN MURID ====================
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f4faf6]">
+    <div className="flex min-h-screen bg-[#f4faf6]">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col h-screen overflow-hidden lg:ml-0">
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden lg:ml-0">
         <Header onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <main className="flex-1 p-4 lg:p-8 max-w-6xl w-full mx-auto flex flex-col overflow-hidden">
+        <main className="flex-1 p-4 lg:p-8 max-w-6xl w-full mx-auto flex flex-col overflow-y-auto">
           <div className="flex flex-col h-full gap-5">
             {/* Header */}
             <div className="mb-4 shrink-0">
