@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
             mapel: row.get('mapel'),
             pengajar: row.get('pengajar') || '-',
             nilai: row.get('nilai') || '-',
+            predikat: row.get('predikat') || '-', // ✅ Tambahkan ini
             catatan: row.get('catatan') || '-',
         }));
 
@@ -41,7 +42,6 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// PUT: Update nilai
 // PUT: Update nilai
 export async function PUT(request: NextRequest) {
     try {
@@ -61,6 +61,17 @@ export async function PUT(request: NextRequest) {
         }
 
         const { username, tanggal, mapel, nilai, catatan } = await request.json();
+
+        // ✅ Hitung predikat dari nilai
+        const getPredikat = (nilai: number) => {
+            if (nilai >= 90) return 'A';
+            if (nilai >= 80) return 'B';
+            if (nilai >= 70) return 'C';
+            return 'D';
+        };
+
+        const nilaiNum = parseInt(nilai);
+        const predikat = nilai && !isNaN(nilaiNum) ? getPredikat(nilaiNum) : '-';
 
         const doc = await getGoogleSheetsClient();
         const sheet = doc.sheetsByIndex[6]; // Sheet Nilai Murid
@@ -86,6 +97,7 @@ export async function PUT(request: NextRequest) {
         }
 
         row.set('nilai', nilai);
+        row.set('predikat', predikat); // ✅ Tambahkan ini
         row.set('catatan', catatan);
         await row.save();
 

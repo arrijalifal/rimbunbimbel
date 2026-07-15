@@ -32,6 +32,7 @@ interface NilaiMurid {
   mapel: string;
   pengajar: string;
   nilai: string;
+  predikat: string; // ✅ Tambahkan ini
   catatan: string;
 }
 
@@ -199,6 +200,10 @@ export default function LaporanPage() {
 
       if (!response.ok) throw new Error('Gagal menyimpan nilai');
 
+      // ✅ Hitung predikat dari nilai yang di-edit
+      const nilaiNum = parseInt(editNilai);
+      const predikatBaru = editNilai && !isNaN(nilaiNum) ? getPredikat(nilaiNum) : '-';
+
       // Update local data - cari berdasarkan username + tanggal + mapel
       const updatedData = nilaiData.map(data => {
         if (data.username === item.username &&
@@ -207,6 +212,7 @@ export default function LaporanPage() {
           return {
             ...data,
             nilai: editNilai,
+            predikat: predikatBaru, // ✅ Tambahkan ini
             catatan: editCatatan,
           };
         }
@@ -254,21 +260,16 @@ export default function LaporanPage() {
   // Get predikat
   const getPredikat = (nilai: number) => {
     if (nilai >= 90) return 'A';
-    if (nilai >= 85) return 'A-';
-    if (nilai >= 80) return 'B+';
-    if (nilai >= 75) return 'B';
-    if (nilai >= 70) return 'C+';
-    return 'C';
+    if (nilai >= 80) return 'B';
+    if (nilai >= 70) return 'C';
+    return 'D';
   };
 
   const getPredikatColor = (predikat: string) => {
     const colors: Record<string, string> = {
       'A': 'bg-green-100 text-green-700',
-      'A-': 'bg-green-50 text-green-600',
-      'B+': 'bg-blue-100 text-blue-700',
-      'B': 'bg-blue-50 text-blue-600',
-      'C+': 'bg-yellow-100 text-yellow-700',
-      'C': 'bg-yellow-50 text-yellow-600',
+      'B': 'bg-blue-100 text-blue-700',
+      'C': 'bg-yellow-100 text-yellow-700',
     };
     return colors[predikat] || 'bg-gray-100 text-gray-600';
   };
@@ -424,6 +425,7 @@ export default function LaporanPage() {
                             Nilai {sortField === 'nilai' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
                           </button>
                         </th>
+                        <th className="px-4 py-3 text-center font-semibold text-[#1a4731]">Predikat</th>
                         <th className="px-4 py-3 text-left font-semibold text-[#1a4731]">Catatan</th>
                         <th className="px-4 py-3 text-center font-semibold text-[#1a4731]">Aksi</th>
                       </tr>
@@ -462,6 +464,18 @@ export default function LaporanPage() {
                                 ) : (
                                   <span className={`font-bold ${nilaiNum >= 80 ? 'text-green-600' : nilaiNum >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>
                                     {item.nilai || '-'}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                {isEditing ? (
+                                  // Saat edit, predikat otomatis terhitung dari nilai
+                                  <span className="text-sm text-gray-400">
+                                    {editNilai ? getPredikat(parseInt(editNilai)) : '-'}
+                                  </span>
+                                ) : (
+                                  <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block ${getPredikatColor(item.predikat)}`}>
+                                    {item.predikat || '-'}
                                   </span>
                                 )}
                               </td>

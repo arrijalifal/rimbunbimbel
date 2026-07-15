@@ -238,17 +238,16 @@ export async function POST(request: NextRequest) {
 
       // ✅ JIKA STATUS HADIR, TAMBAHKAN KE SHEET NILAI MURID
       if (status === 'Hadir' && mapel) {
-        console.log('  ✅ Status HADIR, tambahkan ke Nilai Murid'); // ✅ TAMBAHKAN INI
-
-        // Ambil data absensi untuk mendapatkan tanggal dan hari
         const doc = await getGoogleSheetsClient();
         const sheet = doc.sheetsByIndex[5];
         const rows = await sheet.getRows();
         const row = rows.find(r => r.rowNumber === rowIndex);
 
-        console.log('  row ditemukan untuk Nilai Murid:', row ? '✅' : '❌'); // ✅ TAMBAHKAN INI
-
         if (row) {
+          // ✅ Hitung predikat dari nilai (default '-' karena nilai belum diisi)
+          // Nilai default '-' berarti predikat juga '-'
+          const predikat = '-';
+
           await addNilaiMurid({
             username: row.get('username'),
             tanggal: row.get('tanggal'),
@@ -256,9 +255,9 @@ export async function POST(request: NextRequest) {
             mapel: mapel,
             pengajar: user.username,
             nilai: '-',
+            predikat: predikat, // ✅ Tambahkan ini
             catatan: '-',
           });
-          console.log('  ✅ Nilai Murid berhasil ditambahkan'); // ✅ TAMBAHKAN INI
         }
       }
 

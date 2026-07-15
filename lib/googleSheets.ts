@@ -273,21 +273,23 @@ export async function addNilaiMurid(data: {
   tanggal: string;
   hari: string;
   mapel: string;
-  pengajar: string; // ✅ Tambahkan ini
+  pengajar: string;
   nilai: string;
+  predikat: string; // ✅ Tambahkan ini
   catatan: string;
 }) {
   try {
     const doc = await getGoogleSheetsClient();
-    const sheet = doc.sheetsByIndex[6]; // Sheet ke-7 (index 6)
+    const sheet = doc.sheetsByIndex[6];
     await sheet.addRow({
       username: data.username,
       tanggal: data.tanggal,
       hari: data.hari,
       mapel: data.mapel,
-      pengajar: data.pengajar, // ✅ Tambahkan ini
-      nilai: data.nilai || '-',
-      catatan: data.catatan || '-',
+      pengajar: data.pengajar,
+      nilai: data.nilai,
+      predikat: data.predikat, // ✅ Tambahkan ini
+      catatan: data.catatan,
     });
     return true;
   } catch (error) {
