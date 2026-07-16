@@ -33,7 +33,9 @@ export function verifyToken(token: string) {
     console.log('✅ Token valid:', decoded);
     return decoded;
   } catch (error) {
-    console.error('❌ Token verification failed:', error.message);
+    // ✅ Perbaiki: cek tipe error sebelum akses .message
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Token verification failed:', errorMessage);
     console.error('   JWT_SECRET length:', JWT_SECRET.length);
     return null;
   }
