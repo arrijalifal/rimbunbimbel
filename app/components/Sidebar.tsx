@@ -36,6 +36,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [userRole, setUserRole] = useState<'Murid' | 'Guru' | null>(null);
+  const [username, setUsername] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         if (response.ok) {
           const data = await response.json();
           setUserRole(data.user?.role || 'Murid');
+          setUsername(data.user?.username || '');
         }
       } catch (error) {
         console.error('Error fetching user role:', error);
@@ -55,6 +57,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     fetchUserRole();
   }, []);
 
+  // ✅ Fungsi untuk mendapatkan inisial dari username
+  const getInitials = (name: string) => {
+    if (!name) return '?';
+    return name.charAt(0).toUpperCase();
+  };
+
+  // ✅ Fungsi untuk mendapatkan warna avatar berdasarkan username
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      'bg-red-500',
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-yellow-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-indigo-500',
+      'bg-teal-500',
+      'bg-orange-500',
+      'bg-cyan-500',
+    ];
+    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[index % colors.length];
+  };
+
   const handleNavigation = (path: string) => {
     router.push(path);
     onClose();
@@ -62,10 +88,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/logout', { 
-        method: 'POST' 
+      const response = await fetch('/api/logout', {
+        method: 'POST'
       });
-      
+
       if (response.ok) {
         router.push('/login');
         router.refresh();
@@ -83,19 +109,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // ✅ Filter menu berdasarkan role
   const getMenuItems = () => {
     if (userRole === 'Guru') {
-      // Sembunyikan menu yang hanya untuk murid
       return allMenuItems.filter(item => !muridOnlyMenu.includes(item.id));
     }
     return allMenuItems;
   };
 
   const menuItems = getMenuItems();
+  const initials = getInitials(username);
+  const avatarColor = getAvatarColor(username);
 
   if (isLoading) {
     return (
       <>
         {isOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/30 z-30 lg:hidden"
             onClick={onClose}
           />
@@ -122,7 +149,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     <>
       {/* Overlay untuk mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/30 z-30 lg:hidden"
           onClick={onClose}
         />
@@ -132,11 +159,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         className={`fixed lg:static w-64 h-screen z-40 flex-shrink-0 flex flex-col py-6 px-4 transition-transform duration-300 overflow-y-auto bg-[#1a4731]
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
+        {/* Logo dan Nama Aplikasi + Username */}
         <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white font-bold">
-            RB
+          {/* ✅ Avatar dengan inisial username */}
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 ${avatarColor}`}>
+            {initials}
           </div>
-          <span className="text-lg font-bold text-white">Rimbun Bimbel</span>
+
+          {/* Div 1 - flex-col */}
+          <div className="flex flex-col">
+            {/* Baris 1: Rimbun Bimbel (kecil) */}
+            <span className="text-white/60 text-[10px] uppercase tracking-wider">
+              Rimbun Bimbel
+            </span>
+            {/* ✅ Baris 2: Username (besar & tebal) */}
+            <span className="text-white text-lg font-bold leading-tight">
+              {username || 'User'}
+            </span>
+          </div>
         </div>
 
         <nav className="flex-1 space-y-1">
