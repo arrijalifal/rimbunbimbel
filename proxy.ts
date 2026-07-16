@@ -1,6 +1,3 @@
-export const runtime = 'nodejs'; // ✅ Tambahkan ini di baris paling atas
-
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth';
