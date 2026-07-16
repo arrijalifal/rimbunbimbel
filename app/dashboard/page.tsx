@@ -411,7 +411,7 @@ export default function DashboardPage() {
                   <div className="p-2 bg-yellow-50 rounded-lg">
                     <Star className="w-5 h-5 text-yellow-500" />
                   </div>
-                  <span className="text-sm font-bold text-yellow-600 truncate max-w-[120px]">
+                  <span className="text-sm font-bold text-yellow-600 truncate max-w-[200px]">
                     {stats.nilaiTerbaik || '-'}
                   </span>
                 </div>

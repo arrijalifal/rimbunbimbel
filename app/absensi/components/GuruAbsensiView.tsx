@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Users, Clock, UserCheck, UserX, UserMinus, CheckCircle, XCircle, Check, X, History } from 'lucide-react';
+import { Search, Users, Clock, UserCheck, UserX, UserMinus, CheckCircle, XCircle, History } from 'lucide-react';
 
 interface AbsensiPending {
   username: string;
@@ -66,23 +66,18 @@ export default function GuruAbsensiView() {
     setError('');
 
     try {
-      // ✅ Ambil SEMUA data absensi (bukan hanya pending)
       const semuaRes = await fetch('/api/absensi?type=semua');
       if (!semuaRes.ok) throw new Error('Gagal ambil data absensi');
       const semuaData = await semuaRes.json();
 
-      // Filter berdasarkan status untuk ditampilkan
       const allAbsensi = semuaData.absensi || [];
 
-      // Pending = status 'Pending'
       const pending = allAbsensi.filter((a: any) => a.status === 'Pending');
-      // History = semua status selain 'Pending'
       const history = allAbsensi.filter((a: any) => a.status !== 'Pending');
 
       setPendingList(pending);
       setHistoryList(history);
 
-      // Ambil data murid untuk setiap username
       const allUsernames = [...new Set(allAbsensi.map((a: any) => a.username))];
       const muridMap: Record<string, MuridData> = {};
 
@@ -127,14 +122,22 @@ export default function GuruAbsensiView() {
 
       if (!response.ok) throw new Error('Gagal verifikasi');
 
-      // Refresh data
       await fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal verifikasi');
     }
   };
 
-  // Filter berdasarkan search dan status
+  // ✅ Fungsi untuk handle klik card statistik
+  const handleCardClick = (status: 'Pending' | 'Hadir' | 'Izin' | 'Alpha') => {
+    setSelectedStatus(status);
+    if (status === 'Pending') {
+      setActiveTab('pending');
+    } else {
+      setActiveTab('history');
+    }
+  };
+
   const filterList = (list: any[]) => {
     return list.filter(item => {
       const murid = muridData[item.username];
@@ -149,11 +152,12 @@ export default function GuruAbsensiView() {
   const filteredPending = filterList(pendingList);
   const filteredHistory = filterList(historyList);
 
-  const totalPending = pendingList.length;
-  const hadirCount = pendingList.filter(s => s.status === 'Hadir').length;
+  // Hitung statistik
+  const totalPending = pendingList.length + historyList.length; // Total semua data
   const pendingCount = pendingList.filter(s => s.status === 'Pending').length;
-  const izinCount = pendingList.filter(s => s.status === 'Izin').length;
-  const alphaCount = pendingList.filter(s => s.status === 'Alpha').length;
+  const hadirCount = historyList.filter(s => s.status === 'Hadir').length; // ✅ dari historyList
+  const izinCount = historyList.filter(s => s.status === 'Izin').length;     // ✅ dari historyList
+  const alphaCount = historyList.filter(s => s.status === 'Alpha').length;   // ✅ dari historyList
 
   if (isLoading) {
     return (
@@ -179,9 +183,15 @@ export default function GuruAbsensiView() {
         </div>
       </div>
 
-      {/* Statistik */}
+      {/* Statistik - Semua card bisa diklik */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-gray-500">
+        <button
+          onClick={() => {
+            setSelectedStatus('Semua');
+            setActiveTab('pending');
+          }}
+          className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-gray-500 hover:shadow-md transition-all text-left w-full"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500">Total</p>
@@ -189,8 +199,13 @@ export default function GuruAbsensiView() {
             </div>
             <Users className="w-8 h-8 text-gray-500 opacity-50" />
           </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
+        </button>
+
+        <button
+          onClick={() => handleCardClick('Pending')}
+          className={`bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500 hover:shadow-md transition-all text-left w-full
+            ${selectedStatus === 'Pending' && activeTab === 'pending' ? 'ring-2 ring-yellow-400' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500">Pending</p>
@@ -198,8 +213,13 @@ export default function GuruAbsensiView() {
             </div>
             <Clock className="w-8 h-8 text-yellow-500 opacity-50" />
           </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+        </button>
+
+        <button
+          onClick={() => handleCardClick('Hadir')}
+          className={`bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500 hover:shadow-md transition-all text-left w-full
+            ${selectedStatus === 'Hadir' && activeTab === 'history' ? 'ring-2 ring-green-400' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500">Hadir</p>
@@ -207,8 +227,13 @@ export default function GuruAbsensiView() {
             </div>
             <UserCheck className="w-8 h-8 text-green-500 opacity-50" />
           </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+        </button>
+
+        <button
+          onClick={() => handleCardClick('Izin')}
+          className={`bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-all text-left w-full
+            ${selectedStatus === 'Izin' && activeTab === 'history' ? 'ring-2 ring-blue-400' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500">Izin</p>
@@ -216,8 +241,13 @@ export default function GuruAbsensiView() {
             </div>
             <UserMinus className="w-8 h-8 text-blue-500 opacity-50" />
           </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
+        </button>
+
+        <button
+          onClick={() => handleCardClick('Alpha')}
+          className={`bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500 hover:shadow-md transition-all text-left w-full
+            ${selectedStatus === 'Alpha' && activeTab === 'history' ? 'ring-2 ring-red-400' : ''}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500">Alpha</p>
@@ -225,7 +255,7 @@ export default function GuruAbsensiView() {
             </div>
             <UserX className="w-8 h-8 text-red-500 opacity-50" />
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Tabs */}
@@ -285,7 +315,14 @@ export default function GuruAbsensiView() {
               {['Semua', 'Pending', 'Hadir', 'Izin', 'Alpha'].map((status) => (
                 <button
                   key={status}
-                  onClick={() => setSelectedStatus(status as any)}
+                  onClick={() => {
+                    setSelectedStatus(status as any);
+                    if (status === 'Pending') {
+                      setActiveTab('pending');
+                    } else if (status !== 'Semua') {
+                      setActiveTab('history');
+                    }
+                  }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition
                     ${selectedStatus === status
                       ? 'bg-green-mid text-white'
@@ -316,11 +353,6 @@ export default function GuruAbsensiView() {
               {activeTab === 'pending' ? (
                 filteredPending.length > 0 ? (
                   filteredPending.map((item, index) => {
-                    console.log('📊 Item Pending:', {
-                      username: item.username,
-                      rowIndex: item.rowIndex,
-                      mapel: item.mapel
-                    });
                     const murid = muridData[item.username];
                     return (
                       <tr key={index} className="border-b border-[#f0f7f3] last:border-0 hover:bg-[#f8fbf9] transition-colors">
@@ -334,7 +366,7 @@ export default function GuruAbsensiView() {
                         <td className="py-3 text-gray-600">{item.mapel || '-'}</td>
                         <td className="py-3">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
-                    ${statusColors[item.status as keyof typeof statusColors]}`}
+                            ${statusColors[item.status as keyof typeof statusColors]}`}
                           >
                             {item.status}
                           </span>
@@ -396,7 +428,7 @@ export default function GuruAbsensiView() {
                         <td className="py-3 text-gray-600">{item.mapel || '-'}</td>
                         <td className="py-3">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
-                    ${statusColors[item.status as keyof typeof statusColors]}`}
+                            ${statusColors[item.status as keyof typeof statusColors]}`}
                           >
                             {item.status}
                           </span>
