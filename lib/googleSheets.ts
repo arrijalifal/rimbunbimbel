@@ -1,5 +1,4 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet';
-import creds from '../rimbunbimbelkey.json' with {type: 'json'};
 import { JWT } from 'google-auth-library';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -7,8 +6,9 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 export async function getGoogleSheetsClient() {
   try {
     const serviceAccountAuth = new JWT({
-      email: creds.client_email,
-      key: creds.private_key,
+      // email: creds.client_email,
+      email: process.env.GOOGLE_CLIENT_EMAIL!,
+      key: process.env.GOOGLE_PRIVATE_KEY!,
       scopes: SCOPES,
     });
 
@@ -31,7 +31,7 @@ export async function getMuridByUsername(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[0];
     const rows = await sheet.getRows();
-    
+
     const murid = rows.find(row => row.get('username') === username);
     if (!murid) return null;
 
@@ -55,9 +55,9 @@ export async function getProfilByUsername(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[0]; // Sheet 1 - Data Murid
     const rows = await sheet.getRows();
-    
+
     const profilData = rows.find(row => row.get('username') === username);
-    
+
     if (!profilData) {
       return null;
     }
@@ -82,7 +82,7 @@ export async function getGuruByUsername(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[1]; // Sheet 2 - Data Guru
     const rows = await sheet.getRows();
-    
+
     const guru = rows.find(row => row.get('username') === username);
     if (!guru) return null;
 
@@ -104,7 +104,7 @@ export async function getUsers() {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[2];
     const rows = await sheet.getRows();
-    
+
     const users = rows.map(row => ({
       username: row.get('username'),
       password: row.get('password'),
@@ -129,7 +129,7 @@ export async function getJadwalMurid(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[3];
     const rows = await sheet.getRows();
-    
+
     const jadwal = rows
       .filter(row => row.get('username').toLowerCase() === username.toLowerCase())
       .map(row => ({
@@ -150,9 +150,9 @@ export async function getJadwalMapel(mingguKe: number, hari: string, program: st
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[4];
     const rows = await sheet.getRows();
-    
+
     const jadwal = rows
-      .filter(row => 
+      .filter(row =>
         parseInt(row.get('minggu_ke')) === mingguKe &&
         row.get('hari') === hari &&
         row.get('program') === program
@@ -175,7 +175,7 @@ export async function getAbsensiByUsername(username: string) {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[5];
     const rows = await sheet.getRows();
-    
+
     const absensi = rows
       .filter(row => row.get('username').toLowerCase() === username.toLowerCase())
       .map(row => ({
@@ -199,7 +199,7 @@ export async function getAbsensiPending() {
     const doc = await getGoogleSheetsClient();
     const sheet = doc.sheetsByIndex[5];
     const rows = await sheet.getRows();
-    
+
     const pending = rows
       .filter(row => row.get('status') === 'Pending')
       .map(row => ({
@@ -254,7 +254,7 @@ export async function updateAbsensiStatus(rowIndex: number, status: string, veri
     const sheet = doc.sheetsByIndex[5];
     const rows = await sheet.getRows();
     const row = rows.find(r => r.rowNumber === rowIndex);
-    
+
     if (row) {
       row.set('status', status);
       row.set('verifikasi_oleh', verifikasi_oleh);
@@ -296,5 +296,69 @@ export async function addNilaiMurid(data: {
   } catch (error) {
     console.error('Error adding nilai murid:', error);
     throw new Error('Gagal menambahkan data nilai murid');
+  }
+}
+
+// ===== SHEET 8: Pengumuman =====
+export async function getPengumuman() {
+  try {
+    const doc = await getGoogleSheetsClient();
+    const sheet = doc.sheetsByIndex[7]; // Sheet ke-8 (index 7)
+    const rows = await sheet.getRows();
+
+    const pengumuman = rows.map(row => ({
+      timestamp: row.get('timestamp'),
+      program: row.get('program'),
+      pengumuman: row.get('pengumuman'),
+      rowIndex: row.rowNumber,
+    }));
+
+    // Urutkan dari yang terbaru
+    pengumuman.sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+
+    return pengumuman;
+  } catch (error) {
+    console.error('Error reading pengumuman:', error);
+    throw new Error('Gagal membaca data pengumuman');
+  }
+}
+
+export async function addPengumuman(data: {
+  timestamp: string;
+  program: string;
+  pengumuman: string;
+}) {
+  try {
+    const doc = await getGoogleSheetsClient();
+    const sheet = doc.sheetsByIndex[7];
+    await sheet.addRow({
+      timestamp: data.timestamp,
+      program: data.program,
+      pengumuman: data.pengumuman,
+    });
+    return true;
+  } catch (error) {
+    console.error('Error adding pengumuman:', error);
+    throw new Error('Gagal menambahkan pengumuman');
+  }
+}
+
+export async function deletePengumuman(rowIndex: number) {
+  try {
+    const doc = await getGoogleSheetsClient();
+    const sheet = doc.sheetsByIndex[7];
+    const rows = await sheet.getRows();
+    const row = rows.find(r => r.rowNumber === rowIndex);
+
+    if (row) {
+      await row.delete();
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error deleting pengumuman:', error);
+    throw new Error('Gagal menghapus pengumuman');
   }
 }

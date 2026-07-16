@@ -12,13 +12,12 @@ import {
   CheckCircle, 
   FileText,
   UserCheck,
-  UserPlus,
   Star,
-  BarChart3
+  BarChart3,
+  Megaphone
 } from 'lucide-react';
 import Sidebar from '@/app/components/Sidebar';
 import Header from '@/app/components/Header';
-import { announcementsData } from '@/lib/data';
 
 interface DashboardStats {
   // Untuk Murid
@@ -33,6 +32,13 @@ interface DashboardStats {
   totalNilaiDiisi?: number;
 }
 
+interface Pengumuman {
+  timestamp: string;
+  program: string;
+  pengumuman: string;
+  rowIndex: number;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -40,6 +46,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<{ username: string; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({});
+  const [pengumuman, setPengumuman] = useState<Pengumuman[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,12 +83,34 @@ export default function DashboardPage() {
 
         // 5. Ambil jadwal murid (untuk murid)
         let jadwalMurid: any[] = [];
+        let userProgram = '';
         if (meData.user?.role === 'Murid') {
           const jadwalRes = await fetch('/api/absensi?type=jadwal');
           if (jadwalRes.ok) {
             const jadwalData = await jadwalRes.json();
             jadwalMurid = jadwalData.jadwal || [];
           }
+          
+          // Ambil program murid untuk filter pengumuman
+          const profilRes = await fetch('/api/profil');
+          if (profilRes.ok) {
+            const profilData = await profilRes.json();
+            userProgram = profilData.profil?.program || '';
+          }
+        }
+
+        // 6. Ambil pengumuman
+        const pengumumanRes = await fetch('/api/pengumuman');
+        if (pengumumanRes.ok) {
+          const pengumumanData = await pengumumanRes.json();
+          let filtered = pengumumanData.pengumuman || [];
+          
+          // Filter pengumuman untuk murid
+          if (meData.user?.role === 'Murid' && userProgram) {
+            filtered = filtered.filter((p: Pengumuman) => p.program === userProgram);
+          }
+          
+          setPengumuman(filtered.slice(0, 3)); // Ambil 3 teratas
         }
 
         // ==================== HITUNG STATISTIK ====================
@@ -89,20 +118,13 @@ export default function DashboardPage() {
         if (meData.user?.role === 'Guru') {
           // === DASHBOARD GURU ===
           
-          // Total murid
           const totalMurid = allMurid.length;
-
-          // Total pertemuan yang diverifikasi oleh guru ini
           const totalPertemuanGuru = allAbsensi.filter(
             (a: any) => a.verifikasi_oleh === meData.user.username
           ).length;
-
-          // Pending absensi (semua pending, bukan hanya milik guru)
           const pendingAbsensi = allAbsensi.filter(
             (a: any) => a.status === 'Pending'
           ).length;
-
-          // Total nilai yang sudah diisi oleh guru ini
           const totalNilaiDiisi = allNilai.filter(
             (n: any) => n.pengajar === meData.user.username && n.nilai && n.nilai !== '-'
           ).length;
@@ -117,13 +139,11 @@ export default function DashboardPage() {
         } else {
           // === DASHBOARD MURID ===
           
-          // Total pertemuan murid (dari absensi)
           const absensiMurid = allAbsensi.filter(
             (a: any) => a.username === meData.user.username
           );
           const totalPertemuan = absensiMurid.length;
 
-          // Rata-rata nilai
           const nilaiMurid = allNilai.filter(
             (n: any) => n.username === meData.user.username && n.nilai && n.nilai !== '-'
           );
@@ -131,7 +151,6 @@ export default function DashboardPage() {
             ? Math.round(nilaiMurid.reduce((acc: number, n: any) => acc + parseInt(n.nilai), 0) / nilaiMurid.length)
             : 0;
 
-          // Jadwal mendatang (dari jadwal murid)
           const hariIndo = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
           const today = new Date().getDay();
           let upcomingCount = 0;
@@ -145,7 +164,6 @@ export default function DashboardPage() {
             }
           }
 
-          // Nilai terbaik (mapel dengan nilai tertinggi)
           let nilaiTerbaik = '-';
           if (nilaiMurid.length > 0) {
             const terbaik = nilaiMurid.reduce((a: any, b: any) => 
@@ -182,6 +200,16 @@ export default function DashboardPage() {
 
     fetchData();
   }, [router]);
+
+  // Format tanggal untuk pengumuman
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
 
   if (loading) {
     return (
@@ -305,7 +333,7 @@ export default function DashboardPage() {
                   className="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl p-4 transition-all duration-200 flex items-center gap-3 group"
                 >
                   <div className="p-2 bg-purple-500 rounded-lg text-white group-hover:scale-105 transition">
-                    <FileText className="w-5 h-5" />
+                    <Megaphone className="w-5 h-5" />
                   </div>
                   <div className="text-left">
                     <p className="font-semibold text-[#1a4731] text-sm">Pengumuman</p>
@@ -327,17 +355,27 @@ export default function DashboardPage() {
                   </button>
                 </div>
                 <div className="rounded-xl p-4 shadow-sm space-y-2 bg-white">
-                  {announcementsData.slice(0, 3).map((announcement) => (
-                    <div key={announcement.id} className="flex gap-3 items-start pb-2 border-b border-gray-100 last:border-0 last:pb-0">
-                      <div className={`w-2 h-2 mt-1.5 rounded-full flex-shrink-0 
-                        ${announcement.priority === 'high' ? 'bg-[#2d6a4f]' : 'bg-[#74a892]'}`} 
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-[#1a4731]">{announcement.title}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{announcement.date}</p>
+                  {pengumuman.length > 0 ? (
+                    pengumuman.map((item, index) => (
+                      <div key={index} className="flex gap-3 items-start pb-2 border-b border-gray-100 last:border-0 last:pb-0">
+                        <div className="w-2 h-2 mt-1.5 rounded-full flex-shrink-0 bg-[#2d6a4f]" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-[#1a4731]">{item.pengumuman}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-gray-400">{formatDate(item.timestamp)}</span>
+                            <span className="text-xs text-[#2d6a4f] bg-green-50 px-2 py-0.5 rounded-full">
+                              {item.program}
+                            </span>
+                          </div>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-gray-400 text-sm">
+                      <Megaphone className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                      <p>Belum ada pengumuman</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>
@@ -433,17 +471,27 @@ export default function DashboardPage() {
                 </button>
               </div>
               <div className="rounded-xl p-4 shadow-sm space-y-2 bg-white">
-                {announcementsData.slice(0, 3).map((announcement) => (
-                  <div key={announcement.id} className="flex gap-3 items-start pb-2 border-b border-gray-100 last:border-0 last:pb-0">
-                    <div className={`w-2 h-2 mt-1.5 rounded-full flex-shrink-0 
-                      ${announcement.priority === 'high' ? 'bg-[#2d6a4f]' : 'bg-[#74a892]'}`} 
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-[#1a4731]">{announcement.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{announcement.date}</p>
+                {pengumuman.length > 0 ? (
+                  pengumuman.map((item, index) => (
+                    <div key={index} className="flex gap-3 items-start pb-2 border-b border-gray-100 last:border-0 last:pb-0">
+                      <div className="w-2 h-2 mt-1.5 rounded-full flex-shrink-0 bg-[#2d6a4f]" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-[#1a4731]">{item.pengumuman}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-gray-400">{formatDate(item.timestamp)}</span>
+                          <span className="text-xs text-[#2d6a4f] bg-green-50 px-2 py-0.5 rounded-full">
+                            {item.program}
+                          </span>
+                        </div>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-gray-400 text-sm">
+                    <Megaphone className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                    <p>Belum ada pengumuman</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
