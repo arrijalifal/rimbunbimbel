@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProfilByUsername } from '@/lib/googleSheets';
+import { getProfilByUsername, getGuruByUsername } from '@/lib/googleSheets';
 import { verifyToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
@@ -10,7 +10,25 @@ export async function GET(request: NextRequest) {
 
     // Jika ada parameter username, ambil data profil untuk username tersebut
     if (username) {
-      const profil = await getProfilByUsername(username);
+      // Coba cari di data murid dulu
+      let profil = await getProfilByUsername(username);
+      
+      // Jika tidak ditemukan, coba cari di data guru
+      if (!profil) {
+        const guru = await getGuruByUsername(username);
+        if (guru) {
+          // Konversi ke format yang sama dengan profil murid
+          profil = {
+            username: guru.username,
+            nama: guru.nama,
+            kelas: 'Guru',
+            program: '-',
+            jadwal_les: '-',
+            bergabung: '-',
+          };
+        }
+      }
+      
       if (!profil) {
         return NextResponse.json(
           { error: 'Data profil tidak ditemukan' },
@@ -36,7 +54,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const profil = await getProfilByUsername(user.username);
+    // Coba cari di data murid dulu
+    let profil = await getProfilByUsername(user.username);
+    let isGuru = false;
+    
+    // Jika tidak ditemukan di murid, coba cari di data guru
+    if (!profil) {
+      const guru = await getGuruByUsername(user.username);
+      if (guru) {
+        isGuru = true;
+        profil = {
+          username: guru.username,
+          nama: guru.nama,
+          kelas: 'Guru',
+          program: '-',
+          jadwal_les: '-',
+          bergabung: '-',
+        };
+      }
+    }
+    
     if (!profil) {
       return NextResponse.json(
         { error: 'Data profil tidak ditemukan' },
@@ -44,7 +81,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ profil });
+    return NextResponse.json({ profil, isGuru });
   } catch (error) {
     console.error('Error fetching profil:', error);
     return NextResponse.json(
