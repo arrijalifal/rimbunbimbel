@@ -87,7 +87,7 @@ export default function GuruAbsensiView() {
           if (profilRes.ok) {
             const profilData = await profilRes.json();
             if (profilData.profil) {
-              muridMap[username] = {
+              muridMap[username as string] = {
                 username: profilData.profil.username,
                 nama: profilData.profil.nama,
                 kelas: profilData.profil.kelas,
