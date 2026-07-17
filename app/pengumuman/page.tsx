@@ -24,9 +24,24 @@ export default function PengumumanPage() {
 
   // State untuk modal tambah pengumuman (guru)
   const [showModal, setShowModal] = useState(false);
-  const [newProgram, setNewProgram] = useState('');
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]); // ✅ Ganti jadi array
   const [newPengumuman, setNewPengumuman] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Daftar program yang tersedia
+  const programOptions = [
+    { id: 'Calistung', label: 'Calistung' },
+    { id: 'Akademik SD/SMP', label: 'Akademik SD/SMP' },
+    { id: 'Bahasa Inggris', label: 'Bahasa Inggris' },
+  ];
+
+  const toggleProgram = (program: string) => {
+    setSelectedPrograms(prev =>
+      prev.includes(program)
+        ? prev.filter(p => p !== program)
+        : [...prev, program]
+    );
+  };
 
   useEffect(() => {
     fetchData();
@@ -80,20 +95,21 @@ export default function PengumumanPage() {
 
   // Handle tambah pengumuman (guru)
   const handleAddPengumuman = async () => {
-    if (!newProgram || !newPengumuman) {
-      setError('Program dan pengumuman wajib diisi');
+    if (selectedPrograms.length === 0 || !newPengumuman) {
+      setError('Pilih minimal satu program dan tulis pengumuman');
       return;
     }
 
     setIsSubmitting(true);
     setError('');
-    
+
     try {
+      // Kirim array program ke API
       const response = await fetch('/api/pengumuman', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          program: newProgram,
+          programs: selectedPrograms, // ✅ Kirim array
           pengumuman: newPengumuman,
         }),
       });
@@ -101,7 +117,7 @@ export default function PengumumanPage() {
       if (!response.ok) throw new Error('Gagal menambah pengumuman');
 
       setShowModal(false);
-      setNewProgram('');
+      setSelectedPrograms([]);
       setNewPengumuman('');
       await fetchData();
     } catch (err) {
@@ -109,8 +125,8 @@ export default function PengumumanPage() {
     } finally {
       setIsSubmitting(false);
     }
-    
   };
+
 
   // Handle hapus pengumuman (guru)
   const handleDeletePengumuman = async (rowIndex: number) => {
@@ -126,6 +142,25 @@ export default function PengumumanPage() {
       await fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal menghapus');
+    }
+  };
+
+  // Handle hapus semua pengumuman (guru)
+  const handleDeleteAllPengumuman = async () => {
+    if (pengumuman.length === 0) return;
+
+    if (!confirm(`Apakah Anda yakin ingin menghapus semua ${pengumuman.length} pengumuman?`)) return;
+
+    try {
+      const response = await fetch('/api/pengumuman?action=all', {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Gagal menghapus semua pengumuman');
+
+      await fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menghapus semua');
     }
   };
 
@@ -187,13 +222,25 @@ export default function PengumumanPage() {
                 </p>
               </div>
               {userRole === 'Guru' && (
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-mid text-white rounded-xl text-sm font-medium hover:bg-green-dark transition"
-                >
-                  <Plus className="w-4 h-4" />
-                  Tambah Pengumuman
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* ✅ Tombol Hapus Semua */}
+                  {pengumuman.length > 0 && (
+                    <button
+                      onClick={handleDeleteAllPengumuman}
+                      className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Hapus Semua
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-mid text-white rounded-xl text-sm font-medium hover:bg-green-dark transition"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Tambah Pengumuman
+                  </button>
+                </div>
               )}
             </div>
 
@@ -258,7 +305,12 @@ export default function PengumumanPage() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-[#1a4731]">Tambah Pengumuman</h3>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setSelectedPrograms([]);
+                  setNewPengumuman('');
+                  setError('');
+                }}
                 className="text-gray-400 hover:text-gray-600 transition"
               >
                 <X className="w-5 h-5" />
@@ -266,21 +318,33 @@ export default function PengumumanPage() {
             </div>
 
             <div className="space-y-4">
-              {/* Program */}
+              {/* ✅ Program - Checklist */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Program <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pilih Program <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={newProgram}
-                  onChange={(e) => setNewProgram(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-mid/20 focus:border-green-mid"
-                >
-                  <option value="">Pilih Program</option>
-                  <option value="Semua">Semua Program</option>
-                  <option value="Calistung">Calistung</option>
-                  <option value="Akademik SD/SMP">Akademik SD/SMP</option>
-                </select>
+                {/* Pilihan program setelah diperbaiki */}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  {programOptions.map((program) => (
+                    <label
+                      key={program.id}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer transition select-none h-11"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPrograms.includes(program.id)}
+                        onChange={() => toggleProgram(program.id)}
+                        className="w-4 h-4 text-green-mid border-gray-300 rounded focus:ring-green-mid focus:ring-2 shrink-0"
+                      />
+                      <span className="text-sm text-gray-700 leading-none">{program.label}</span>
+                    </label>
+                  ))}
+                </div>
+                {selectedPrograms.length > 0 && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ {selectedPrograms.length} program dipilih
+                  </p>
+                )}
               </div>
 
               {/* Pengumuman */}
@@ -305,14 +369,19 @@ export default function PengumumanPage() {
 
               <div className="flex gap-3 pt-2">
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setSelectedPrograms([]);
+                    setNewPengumuman('');
+                    setError('');
+                  }}
                   className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition text-sm font-medium"
                 >
                   Batal
                 </button>
                 <button
                   onClick={handleAddPengumuman}
-                  disabled={isSubmitting || !newProgram || !newPengumuman}
+                  disabled={isSubmitting || selectedPrograms.length === 0 || !newPengumuman}
                   className="flex-1 px-4 py-2 rounded-xl bg-green-mid text-white hover:bg-green-dark transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'Menyimpan...' : 'Simpan'}
