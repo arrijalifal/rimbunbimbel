@@ -267,6 +267,54 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (action === 'verifikasi-manual' && user.role === 'Guru') {
+      const { username, tanggal, hari, jam, mapel, status } = body;
+
+      // Validasi input
+      if (!username || !tanggal || !hari || !jam || !mapel || !status) {
+        return NextResponse.json(
+          { error: 'Semua field wajib diisi' },
+          { status: 400 }
+        );
+      }
+
+      if (!['Hadir', 'Izin', 'Alpha'].includes(status)) {
+        return NextResponse.json(
+          { error: 'Status tidak valid' },
+          { status: 400 }
+        );
+      }
+
+      // Tambahkan absensi langsung dengan status yang dipilih (tanpa pending)
+      await addAbsensi({
+        username,
+        tanggal,
+        hari,
+        jam,
+        mapel,
+        status, // Langsung set status yang dipilih
+        verifikasi_oleh: user.username,
+      });
+
+      // Jika status Hadir, tambahkan ke sheet Nilai Murid
+      if (status === 'Hadir') {
+        await addNilaiMurid({
+          username,
+          tanggal,
+          hari,
+          mapel,
+          pengajar: user.username,
+          nilai: '-',
+          predikat: '-',
+          catatan: '-',
+        });
+      }
+
+      return NextResponse.json({
+        message: `Verifikasi manual berhasil ditambahkan dengan status ${status}`,
+      });
+    }
+
     return NextResponse.json({ error: 'Aksi tidak valid' }, { status: 400 });
   } catch (error) {
     console.error('Error processing absensi:', error);

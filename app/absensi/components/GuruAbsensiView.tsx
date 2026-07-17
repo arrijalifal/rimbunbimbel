@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Users, Clock, UserCheck, UserX, UserMinus, CheckCircle, XCircle, History } from 'lucide-react';
+import { Search, Users, Clock, UserCheck, UserX, UserMinus, CheckCircle, XCircle, History, Plus, X } from 'lucide-react';
 
 interface AbsensiPending {
   username: string;
@@ -47,6 +47,15 @@ export default function GuruAbsensiView() {
   const [error, setError] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<'Semua' | 'Pending' | 'Hadir' | 'Izin' | 'Alpha'>('Semua');
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
+
+  // ✅ State untuk modal tambah manual
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [selectedMurid, setSelectedMurid] = useState('');
+  const [selectedMapel, setSelectedMapel] = useState('');
+  const [tanggalManual, setTanggalManual] = useState('');
+  const [jamManual, setJamManual] = useState('');
+  const [statusManual, setStatusManual] = useState<'Hadir' | 'Izin' | 'Alpha'>('Hadir');
+  const [isSubmittingManual, setIsSubmittingManual] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -148,6 +157,65 @@ export default function GuruAbsensiView() {
       return matchSearch && matchStatus;
     });
   };
+
+  // ✅ Fungsi untuk handle tambah manual
+  const handleTambahManual = async () => {
+    if (!selectedMurid || !selectedMapel || !tanggalManual || !jamManual) {
+      setError('Semua field wajib diisi');
+      return;
+    }
+
+    setIsSubmittingManual(true);
+    setError('');
+
+    try {
+      // 1. Cari data murid untuk mendapatkan username
+      const murid = muridData[selectedMurid];
+      if (!murid) {
+        throw new Error('Murid tidak ditemukan');
+      }
+
+      // 2. Tambahkan absensi manual dengan status yang dipilih
+      const response = await fetch('/api/absensi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'verifikasi-manual',
+          username: murid.username,
+          tanggal: tanggalManual,
+          hari: new Date(tanggalManual).toLocaleDateString('id-ID', { weekday: 'long' }),
+          jam: jamManual,
+          mapel: selectedMapel,
+          status: statusManual,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Gagal menambah verifikasi');
+      }
+
+      setShowManualModal(false);
+      resetManualForm();
+      await fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menambah verifikasi');
+    } finally {
+      setIsSubmittingManual(false);
+    }
+  };
+
+  // ✅ Reset form manual
+  const resetManualForm = () => {
+    setSelectedMurid('');
+    setSelectedMapel('');
+    setTanggalManual('');
+    setJamManual('');
+    setStatusManual('Hadir');
+  };
+
+  // ✅ Dapatkan daftar mapel unik
+  const mapelOptions = ['Semua', ...new Set(pendingList.map(item => item.mapel).filter(Boolean))];
 
   const filteredPending = filterList(pendingList);
   const filteredHistory = filterList(historyList);
@@ -310,6 +378,14 @@ export default function GuruAbsensiView() {
                 className="pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-mid/20 focus:border-green-mid w-full sm:w-48"
               />
             </div>
+            {/* ✅ Tombol Tambah Verifikasi Manual */}
+            <button
+              onClick={() => setShowManualModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah Manual
+            </button>
 
             <div className="flex gap-1 flex-wrap">
               {['Semua', 'Pending', 'Hadir', 'Izin', 'Alpha'].map((status) => (
@@ -451,6 +527,128 @@ export default function GuruAbsensiView() {
           </table>
         </div>
       </div>
+      {showManualModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-[#1a4731]">Tambah Verifikasi Manual</h3>
+              <button
+                onClick={() => {
+                  setShowManualModal(false);
+                  resetManualForm();
+                  setError('');
+                }}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Pilih Murid */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Murid <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedMurid}
+                  onChange={(e) => setSelectedMurid(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-mid/20 focus:border-green-mid"
+                >
+                  <option value="">Pilih Murid</option>
+                  {Object.values(muridData).map((murid) => (
+                    <option key={murid.username} value={murid.username}>
+                      {murid.nama} ({murid.kelas})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Mapel */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Mata Pelajaran <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={selectedMapel}
+                  onChange={(e) => setSelectedMapel(e.target.value)}
+                  placeholder="Contoh: Matematika, Bahasa Inggris..."
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-mid/20 focus:border-green-mid"
+                />
+              </div>
+
+              {/* Tanggal */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tanggal <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={tanggalManual}
+                  onChange={(e) => setTanggalManual(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-mid/20 focus:border-green-mid"
+                />
+              </div>
+
+              {/* Jam */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Jam <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="time"
+                  value={jamManual}
+                  onChange={(e) => setJamManual(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-mid/20 focus:border-green-mid"
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={statusManual}
+                  onChange={(e) => setStatusManual(e.target.value as 'Hadir' | 'Izin' | 'Alpha')}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-mid/20 focus:border-green-mid"
+                >
+                  <option value="Hadir">Hadir</option>
+                  <option value="Izin">Izin</option>
+                  <option value="Alpha">Alpha</option>
+                </select>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowManualModal(false);
+                    resetManualForm();
+                    setError('');
+                  }}
+                  className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition text-sm font-medium"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleTambahManual}
+                  disabled={isSubmittingManual || !selectedMurid || !selectedMapel || !tanggalManual || !jamManual}
+                  className="flex-1 px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmittingManual ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
