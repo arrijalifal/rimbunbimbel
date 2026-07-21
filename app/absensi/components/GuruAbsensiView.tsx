@@ -75,10 +75,10 @@ export default function GuruAbsensiView() {
     setError('');
 
     try {
+      // 1. Ambil data absensi
       const semuaRes = await fetch('/api/absensi?type=semua');
       if (!semuaRes.ok) throw new Error('Gagal ambil data absensi');
       const semuaData = await semuaRes.json();
-
       const allAbsensi = semuaData.absensi || [];
 
       const pending = allAbsensi.filter((a: any) => a.status === 'Pending');
@@ -87,26 +87,46 @@ export default function GuruAbsensiView() {
       setPendingList(pending);
       setHistoryList(history);
 
-      const allUsernames = [...new Set(allAbsensi.map((a: any) => a.username))];
+      // ✅ 2. Ambil SEMUA data murid dari sheet (bukan hanya dari absensi)
+      const muridRes = await fetch('/api/murid');
       const muridMap: Record<string, MuridData> = {};
 
-      for (const username of allUsernames) {
-        try {
-          const profilRes = await fetch(`/api/profil?username=${username}`);
-          if (profilRes.ok) {
-            const profilData = await profilRes.json();
-            if (profilData.profil) {
-              muridMap[username as string] = {
-                username: profilData.profil.username,
-                nama: profilData.profil.nama,
-                kelas: profilData.profil.kelas,
-              };
-            }
+      if (muridRes.ok) {
+        const muridData = await muridRes.json();
+        muridData.murid.forEach((m: any) => {
+          // Hanya tambahkan yang punya nama (untuk menghindari data kosong)
+          if (m.nama && m.nama.trim() !== '') {
+            muridMap[m.username] = {
+              username: m.username,
+              nama: m.nama,
+              kelas: m.kelas || '-',
+            };
           }
-        } catch (err) {
-          console.error(`Error fetching profil for ${username}:`, err);
+        });
+      }
+
+      // ✅ 3. Tambahkan juga murid dari data absensi (kalau ada yang tidak ada di sheet)
+      const allUsernames = [...new Set(allAbsensi.map((a: any) => a.username))];
+      for (const username of allUsernames) {
+        if (!muridMap[username as string]) {
+          try {
+            const profilRes = await fetch(`/api/profil?username=${username}`);
+            if (profilRes.ok) {
+              const profilData = await profilRes.json();
+              if (profilData.profil) {
+                muridMap[username as string] = {
+                  username: profilData.profil.username,
+                  nama: profilData.profil.nama || username,
+                  kelas: profilData.profil.kelas || '-',
+                };
+              }
+            }
+          } catch (err) {
+            console.error(`Error fetching profil for ${username}:`, err);
+          }
         }
       }
+
       setMuridData(muridMap);
 
     } catch (err) {
@@ -169,19 +189,13 @@ export default function GuruAbsensiView() {
     setError('');
 
     try {
-      // 1. Cari data murid untuk mendapatkan username
-      const murid = muridData[selectedMurid];
-      if (!murid) {
-        throw new Error('Murid tidak ditemukan');
-      }
-
-      // 2. Tambahkan absensi manual dengan status yang dipilih
+      // ✅ Langsung pakai selectedMurid sebagai username
       const response = await fetch('/api/absensi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'verifikasi-manual',
-          username: murid.username,
+          username: selectedMurid, // ✅ Langsung pakai username
           tanggal: tanggalManual,
           hari: new Date(tanggalManual).toLocaleDateString('id-ID', { weekday: 'long' }),
           jam: jamManual,
