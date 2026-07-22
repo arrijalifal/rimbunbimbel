@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import React from 'react';
+import { getMingguKe } from '@/lib/utils';
 
 interface JadwalMurid {
   hari: string;
@@ -63,7 +64,7 @@ export default function MuridAbsensiView() {
       const hari = hariIndo[hariIndex];
       setTodayHari(hari);
 
-      const minggu = Math.ceil((now.getDate()) / 7);
+      const minggu = getMingguKe(now);
       setMingguKe(minggu);
 
       // 1. Ambil jadwal murid

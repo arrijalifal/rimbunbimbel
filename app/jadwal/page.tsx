@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/app/components/Sidebar';
 import Header from '@/app/components/Header';
+import { getMingguKe } from '@/lib/utils';
 
 interface JadwalMurid {
   hari: string;
@@ -78,7 +79,7 @@ export default function JadwalPage() {
           day: 'numeric',
         })
       );
-      const minggu = Math.ceil((now.getDate()) / 7);
+      const minggu = getMingguKe(now);
       setMingguKe(minggu);
 
       // 3. Ambil jadwal murid (hari dan jam)
