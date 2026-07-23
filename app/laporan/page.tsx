@@ -21,7 +21,9 @@ import {
   Lock,
   BookOpen,
   Calendar,
-  UserCheck
+  UserCheck,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import Sidebar from '@/app/components/Sidebar';
 import Header from '@/app/components/Header';
@@ -59,6 +61,7 @@ export default function LaporanPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMapel, setSelectedMapel] = useState('Semua');
   const [selectedMurid, setSelectedMurid] = useState('Semua');
+  const [showOnlyMyClass, setShowOnlyMyClass] = useState(false); // ✅ State untuk checkbox
 
   // State untuk edit
   const [editingRow, setEditingRow] = useState<string | null>(null);
@@ -142,6 +145,11 @@ export default function LaporanPage() {
       result = result.filter(item => item.username === selectedMurid);
     }
 
+    // ✅ Filter: Tampilkan hanya yang diajar oleh guru yang login
+    if (userRole === 'Guru' && showOnlyMyClass) {
+      result = result.filter(item => item.pengajar === currentUser?.username);
+    }
+
     // Sort default (terbaru di atas)
     result.sort((a, b) => {
       const dateA = new Date(a.tanggal).getTime();
@@ -165,7 +173,7 @@ export default function LaporanPage() {
     }
 
     setFilteredData(result);
-  }, [nilaiData, searchTerm, selectedMapel, selectedMurid, sortField, sortDirection, userRole]);
+  }, [nilaiData, searchTerm, selectedMapel, selectedMurid, sortField, sortDirection, userRole, showOnlyMyClass, currentUser]);
 
   // Handle edit
   const handleEdit = (item: NilaiMurid) => {
@@ -292,7 +300,6 @@ export default function LaporanPage() {
     <div className="flex min-h-screen bg-[#f4faf6]">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
-      {/* Container Responsif: Terkunci di Desktop (lg:), Scrollable Native di Mobile */}
       <div className="flex-1 flex flex-col min-h-screen lg:h-screen lg:overflow-hidden lg:ml-0">
         <Header onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
         
@@ -320,7 +327,7 @@ export default function LaporanPage() {
               )}
             </div>
 
-            {/* Cards Statistik (Lebih ringkas & fleksibel di HP) */}
+            {/* Cards Statistik */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 shrink-0">
               <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border-l-4 border-blue-500">
                 <div className="flex items-center justify-between">
@@ -411,7 +418,29 @@ export default function LaporanPage() {
                 </div>
               </div>
 
-              {/* Quick Sort Bar khusus Mobile (Agar gampang sorting tanpa tabel) */}
+              {/* ✅ TAMBAHAN: Checkbox "Tampilkan yang hanya kamu ajar saja" */}
+              {userRole === 'Guru' && (
+                <div className="flex items-center justify-end gap-2 mt-2.5 pt-2.5 border-t border-gray-100">
+                  <button
+                    onClick={() => setShowOnlyMyClass(!showOnlyMyClass)}
+                    className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 hover:text-green-600 transition cursor-pointer"
+                  >
+                    {showOnlyMyClass ? (
+                      <CheckSquare className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                    ) : (
+                      <Square className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                    )}
+                    <span className="font-medium">Tampilkan yang hanya kamu ajar saja</span>
+                  </button>
+                  {showOnlyMyClass && (
+                    <span className="text-[10px] sm:text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      Aktif
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Quick Sort Bar khusus Mobile */}
               <div className="flex md:hidden items-center justify-between mt-3 pt-2.5 border-t border-gray-100 text-xs text-gray-500">
                 <span className="font-medium text-[11px]">Urutkan:</span>
                 <div className="flex items-center gap-2">
@@ -435,7 +464,7 @@ export default function LaporanPage() {
             <div className="bg-white rounded-2xl shadow-md flex flex-col flex-1 min-h-0 overflow-hidden mb-6 lg:mb-0">
               
               {/* ========================================================= */}
-              {/* 📱 1. CARD VIEW (Tampil Khusus Layar Kecil / Mobile < md) */}
+              {/* 📱 1. CARD VIEW (Mobile) */}
               {/* ========================================================= */}
               <div className="block md:hidden overflow-y-auto flex-1 p-3 space-y-3">
                 {filteredData.length > 0 ? (
@@ -520,7 +549,7 @@ export default function LaporanPage() {
                           )}
                         </div>
 
-                        {/* Action Buttons (Khusus Guru) / Trend (Murid) */}
+                        {/* Action Buttons */}
                         <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between text-xs">
                           {userRole === 'Guru' ? (
                             isEditing ? (
@@ -528,7 +557,7 @@ export default function LaporanPage() {
                                 <button
                                   onClick={() => handleSave(item)}
                                   disabled={isSubmitting}
-                                  className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-green-600 text-white font-medium text-xs shadow-sm hover:bg-green- dark"
+                                  className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-green-600 text-white font-medium text-xs shadow-sm hover:bg-green-700"
                                 >
                                   <Save className="w-3.5 h-3.5" /> Simpan
                                 </button>
@@ -578,7 +607,7 @@ export default function LaporanPage() {
               </div>
 
               {/* ========================================================= */}
-              {/* 💻 2. TABLE VIEW (Tampil di Layar Sedang & Desktop >= md) */}
+              {/* 💻 2. TABLE VIEW (Desktop) */}
               {/* ========================================================= */}
               <div className="hidden md:block overflow-x-auto overflow-y-auto flex-1">
                 <table className="w-full text-sm min-w-[650px]">
@@ -755,6 +784,9 @@ export default function LaporanPage() {
                 <span>Menampilkan {filteredData.length} data</span>
                 {userRole === 'Murid' && filteredData.length > 0 && (
                   <span>Rata-rata: {Math.round(filteredData.reduce((acc, item) => acc + (parseInt(item.nilai) || 0), 0) / filteredData.length)}</span>
+                )}
+                {userRole === 'Guru' && showOnlyMyClass && (
+                  <span className="text-green-600">🔒 Hanya yang kamu ajar</span>
                 )}
               </div>
             </div>
