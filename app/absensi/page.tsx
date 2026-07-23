@@ -14,29 +14,24 @@ export default function AbsensiPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Ambil data user dari API auth
     const fetchUserRole = async () => {
       try {
         const response = await fetch('/api/auth/me');
         
         if (!response.ok) {
-          // Jika tidak terautentikasi, redirect ke login
           router.push('/login');
           return;
         }
 
         const data = await response.json();
         
-        // Set role dari data user
         if (data.user && data.user.role) {
           setUserRole(data.user.role as 'Murid' | 'Guru');
         } else {
-          // Fallback ke Murid jika role tidak ada
           setUserRole('Murid');
         }
       } catch (error) {
         console.error('Error fetching user role:', error);
-        // Jika error, redirect ke login
         router.push('/login');
       } finally {
         setIsLoading(false);
@@ -56,7 +51,7 @@ export default function AbsensiPage() {
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-green-mid border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <p className="mt-4 text-gray-500">Memuat data...</p>
+                <p className="mt-4 text-gray-500 text-sm">Memuat data...</p>
               </div>
             </div>
           </main>
@@ -66,11 +61,11 @@ export default function AbsensiPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f4faf6]">
+    <div className="flex min-h-screen bg-[#f4faf6] overflow-x-hidden">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <div className="flex-1 lg:ml-0 min-h-screen">
+      <div className="flex-1 lg:ml-0 min-h-screen w-full max-w-full overflow-x-hidden">
         <Header onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <main className="p-4 lg:p-8 max-w-6xl mx-auto">
+        <main className="p-3 sm:p-4 lg:p-8 max-w-6xl mx-auto w-full">
           {userRole === 'Guru' ? (
             <GuruAbsensiView />
           ) : (
