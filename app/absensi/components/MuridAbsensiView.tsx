@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import React from 'react';
 import { getMingguKe } from '@/lib/utils';
+import { Calendar, Clock, BookOpen, UserCheck, CheckCircle2 } from 'lucide-react';
 
 interface JadwalMurid {
   hari: string;
@@ -18,7 +19,7 @@ interface AbsensiRiwayat {
   tanggal: string;
   hari: string;
   jam: string;
-  mapel: string; // ✅ Tambahkan mapel
+  mapel: string;
   status: string;
   verifikasi_oleh: string;
 }
@@ -38,7 +39,7 @@ export default function MuridAbsensiView() {
   const [mingguKe, setMingguKe] = useState(1);
   const [absensiHariIni, setAbsensiHariIni] = useState<AbsensiRiwayat | null>(null);
 
-  // ✅ STATE UNTUK MAPEL YANG DIPILIH
+  // STATE UNTUK MAPEL YANG DIPILIH
   const [selectedMapel, setSelectedMapel] = useState<string>('');
 
   useEffect(() => {
@@ -88,7 +89,6 @@ export default function MuridAbsensiView() {
           const mapelData = await mapelRes.json();
           setJadwalMapel(mapelData.jadwal || []);
 
-          // ✅ SET DEFAULT MAPEL PERTAMA
           if (mapelData.jadwal && mapelData.jadwal.length > 0) {
             const firstMapel = mapelData.jadwal[0].mapel_1;
             setSelectedMapel(firstMapel);
@@ -100,7 +100,6 @@ export default function MuridAbsensiView() {
       const cekRes = await fetch('/api/absensi?type=cek-hari-ini');
       if (cekRes.ok) {
         const cekData = await cekRes.json();
-        console.log('📊 Cek absen hari ini:', cekData);
         setIsAbsen(cekData.sudahAbsen);
         if (cekData.sudahAbsen && cekData.absensi.length > 0) {
           setAbsensiHariIni(cekData.absensi[0]);
@@ -129,7 +128,6 @@ export default function MuridAbsensiView() {
       const cekRes = await fetch('/api/absensi?type=cek-hari-ini');
       if (cekRes.ok) {
         const cekData = await cekRes.json();
-        console.log('📊 Refresh status absen:', cekData);
         setIsAbsen(cekData.sudahAbsen);
         if (cekData.sudahAbsen && cekData.absensi.length > 0) {
           setAbsensiHariIni(cekData.absensi[0]);
@@ -146,7 +144,6 @@ export default function MuridAbsensiView() {
       return;
     }
 
-    // ✅ VALIDASI MAPEL
     if (!selectedMapel) {
       setError('Silakan pilih mata pelajaran');
       return;
@@ -169,7 +166,7 @@ export default function MuridAbsensiView() {
           tanggal,
           hari,
           jam,
-          mapel: selectedMapel, // ✅ Kirim mapel yang dipilih
+          mapel: selectedMapel,
         }),
       });
 
@@ -184,7 +181,7 @@ export default function MuridAbsensiView() {
         tanggal,
         hari,
         jam,
-        mapel: selectedMapel, // ✅ Tambahkan mapel
+        mapel: selectedMapel,
         status: 'Pending',
         verifikasi_oleh: '-',
       });
@@ -203,8 +200,8 @@ export default function MuridAbsensiView() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-green-mid border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-500">Memuat data...</p>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-green-mid border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-3 text-xs sm:text-sm text-gray-500">Memuat data...</p>
         </div>
       </div>
     );
@@ -212,7 +209,7 @@ export default function MuridAbsensiView() {
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs sm:text-sm">
         {error}
       </div>
     );
@@ -221,41 +218,42 @@ export default function MuridAbsensiView() {
   const hasJadwal = jadwalHariIni.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
+      
       {/* Kartu Status Absensi Hari Ini */}
-      <div className="rounded-2xl p-6 shadow-md bg-white transition-all hover:shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-[#1a4731] text-lg">
+      <div className="rounded-2xl p-4 sm:p-6 shadow-md bg-white transition-all hover:shadow-lg border border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3 sm:mb-4">
+          <h3 className="font-bold text-[#1a4731] text-base sm:text-lg flex items-center gap-2">
             📅 Status Absensi Hari Ini
           </h3>
-          <span className="text-sm text-gray-500">{todayDate}</span>
+          <span className="text-xs sm:text-sm text-gray-500">{todayDate}</span>
         </div>
 
         {hasJadwal ? (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex items-start gap-2">
               <div className="flex-1">
-                <p className="text-[#2d6a4f] font-medium mb-2">
+                <p className="text-[#2d6a4f] text-xs sm:text-sm font-medium mb-2">
                   ✅ Hari ini kamu memiliki jadwal les
                 </p>
                 {jadwalHariIni.map((jadwal, idx) => (
-                  <div key={idx} className="bg-[#f0f7f3] rounded-lg p-3 border border-[#b7e4c7] mb-2">
-                    <p className="font-semibold text-[#1a4731]">
-                      {jadwalMapel[0].mapel_1} / {jadwalMapel[0].mapel_2}
+                  <div key={idx} className="bg-[#f0f7f3] rounded-xl p-3 border border-[#b7e4c7] mb-2">
+                    <p className="font-bold text-[#1a4731] text-xs sm:text-sm">
+                      {jadwalMapel[0]?.mapel_1 || 'Pelajaran 1'} / {jadwalMapel[0]?.mapel_2 || 'Pelajaran 2'}
                     </p>
-                    <div className="flex flex-wrap gap-3 mt-1 text-sm text-gray-600">
-                      <span>🕐 {jadwal.jam}</span>
-                      <span>📚 {jadwal.hari}</span>
+                    <div className="flex flex-wrap gap-3 mt-1.5 text-xs text-gray-600">
+                      <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-gray-400" /> {jadwal.jam}</span>
+                      <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-gray-400" /> {jadwal.hari}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* ✅ PILIHAN MAPEL - TAMPAK SEBELUM ABSEN */}
+            {/* PILIHAN MAPEL - TAMPAK SEBELUM ABSEN */}
             {!isAbsen && jadwalMapel.length > 0 && (
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="space-y-1.5">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700">
                   Pilih Mata Pelajaran
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -265,7 +263,7 @@ export default function MuridAbsensiView() {
                         <button
                           type="button"
                           onClick={() => setSelectedMapel(item.mapel_1)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all
+                          className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all
                             ${selectedMapel === item.mapel_1
                               ? 'bg-green-600 text-white shadow-md'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -278,7 +276,7 @@ export default function MuridAbsensiView() {
                         <button
                           type="button"
                           onClick={() => setSelectedMapel(item.mapel_2)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all
+                          className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all
                             ${selectedMapel === item.mapel_2
                               ? 'bg-green-600 text-white shadow-md'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -299,10 +297,10 @@ export default function MuridAbsensiView() {
                 type="button"
                 onClick={handleAbsen}
                 disabled={isSubmitting || !selectedMapel}
-                className={`w-full py-3.5 rounded-xl font-semibold text-white transition-all duration-300 
+                className={`w-full py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all duration-300 
                   ${isSubmitting || !selectedMapel
                     ? 'opacity-70 cursor-not-allowed'
-                    : 'hover:scale-[1.02] active:scale-[0.98]'
+                    : 'hover:scale-[1.01] active:scale-[0.99]'
                   }`}
                 style={{
                   background: isSubmitting || !selectedMapel
@@ -310,12 +308,12 @@ export default function MuridAbsensiView() {
                     : 'linear-gradient(135deg, #1a4731 0%, #2d6a4f 100%)',
                   boxShadow: isSubmitting || !selectedMapel
                     ? 'none'
-                    : '0 4px 15px rgba(26, 71, 49, 0.3)',
+                    : '0 4px 15px rgba(26, 71, 49, 0.25)',
                 }}
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -329,10 +327,10 @@ export default function MuridAbsensiView() {
               <div className="space-y-2">
                 <button
                   type="button"
-                  className="w-full py-3.5 rounded-xl font-semibold text-white cursor-not-allowed transition-all"
+                  className="w-full py-3 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-white cursor-not-allowed transition-all"
                   style={{
                     background: 'linear-gradient(135deg, #6c757d 0%, #495057 100%)',
-                    boxShadow: '0 4px 15px rgba(108, 117, 125, 0.3)',
+                    boxShadow: '0 4px 15px rgba(108, 117, 125, 0.2)',
                   }}
                   disabled
                 >
@@ -344,18 +342,18 @@ export default function MuridAbsensiView() {
                 </button>
 
                 {absensiHariIni && (
-                  <p className="text-center text-xs text-gray-500">
+                  <p className="text-center text-[11px] sm:text-xs text-gray-500">
                     {absensiHariIni.status === 'Pending' && (
-                      <span>Status: <span className="font-medium text-yellow-600">Pending</span> - {absensiHariIni.mapel} (Menunggu verifikasi guru)</span>
+                      <span>Status: <span className="font-semibold text-yellow-600">Pending</span> - {absensiHariIni.mapel} (Menunggu verifikasi guru)</span>
                     )}
                     {absensiHariIni.status === 'Hadir' && (
-                      <span>Status: <span className="font-medium text-green-600">Hadir</span> - {absensiHariIni.mapel} (Diverifikasi oleh {absensiHariIni.verifikasi_oleh})</span>
+                      <span>Status: <span className="font-semibold text-green-600">Hadir</span> - {absensiHariIni.mapel} (Diverifikasi oleh {absensiHariIni.verifikasi_oleh})</span>
                     )}
                     {absensiHariIni.status === 'Izin' && (
-                      <span>Status: <span className="font-medium text-blue-600">Izin</span> - {absensiHariIni.mapel} (Diverifikasi oleh {absensiHariIni.verifikasi_oleh})</span>
+                      <span>Status: <span className="font-semibold text-blue-600">Izin</span> - {absensiHariIni.mapel} (Diverifikasi oleh {absensiHariIni.verifikasi_oleh})</span>
                     )}
                     {absensiHariIni.status === 'Alpha' && (
-                      <span>Status: <span className="font-medium text-red-600">Alpha</span> - {absensiHariIni.mapel} (Diverifikasi oleh {absensiHariIni.verifikasi_oleh})</span>
+                      <span>Status: <span className="font-semibold text-red-600">Alpha</span> - {absensiHariIni.mapel} (Diverifikasi oleh {absensiHariIni.verifikasi_oleh})</span>
                     )}
                   </p>
                 )}
@@ -363,9 +361,9 @@ export default function MuridAbsensiView() {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-[#74a892] text-sm font-medium">
+              <span className="text-[#74a892] text-xs sm:text-sm font-medium">
                 📖 Hari ini tidak ada jadwal les
               </span>
             </div>
@@ -373,39 +371,95 @@ export default function MuridAbsensiView() {
         )}
       </div>
 
-      {/* Riwayat Absensi - ✅ Tambahkan kolom Mapel */}
-      <div className="rounded-2xl p-6 shadow-md bg-white transition-all hover:shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-[#1a4731] text-lg">
+      {/* Section Riwayat Absensi */}
+      <div className="rounded-2xl p-4 sm:p-6 shadow-md bg-white border border-gray-100">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className="font-bold text-[#1a4731] text-base sm:text-lg flex items-center gap-2">
             📋 Riwayat Absensi
           </h3>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
             {riwayatAbsensi.length} entri
           </span>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* ========================================================= */}
+        {/* 📱 1. CARD VIEW (Khusus Layar HP / Mobile < md)           */}
+        {/* ========================================================= */}
+        <div className="block md:hidden space-y-2.5">
+          {riwayatAbsensi.length > 0 ? (
+            riwayatAbsensi.map((item, idx) => (
+              <div key={idx} className="bg-[#fcfdfd] border border-[#e8f3ec] rounded-xl p-3 shadow-sm">
+                
+                {/* Header Card: Mapel & Status Badge */}
+                <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2 mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-green-mid shrink-0" />
+                    <span className="font-bold text-xs text-gray-800">{item.mapel || '-'}</span>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0
+                    ${item.status === 'Hadir' ? 'bg-green-100 text-green-700' : ''}
+                    ${item.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : ''}
+                    ${item.status === 'Izin' ? 'bg-blue-100 text-blue-700' : ''}
+                    ${item.status === 'Alpha' ? 'bg-red-100 text-red-700' : ''}`}
+                  >
+                    {item.status}
+                  </span>
+                </div>
+
+                {/* Body Card: Tanggal, Hari & Jam */}
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-2">
+                  <div className="flex items-center gap-1.5 text-gray-500">
+                    <Calendar className="w-3 h-3 text-gray-400 shrink-0" />
+                    <span>{item.hari}, {item.tanggal}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-gray-500">
+                    <Clock className="w-3 h-3 text-gray-400 shrink-0" />
+                    <span>Jam: {item.jam}</span>
+                  </div>
+                </div>
+
+                {/* Footer Card: Verifikator */}
+                <div className="pt-1.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <UserCheck className="w-3 h-3 text-gray-400" /> Diverifikasi Oleh:
+                  </span>
+                  <span className="font-semibold text-gray-600">{item.verifikasi_oleh || '-'}</span>
+                </div>
+
+              </div>
+            ))
+          ) : (
+            <div className="py-8 text-center text-gray-400 text-xs">
+              Belum ada riwayat absensi
+            </div>
+          )}
+        </div>
+
+        {/* ========================================================= */}
+        {/* 💻 2. TABLE VIEW (Tampil di Desktop / Tablet >= md)        */}
+        {/* ========================================================= */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-500 border-b-2 border-[#e8f3ec]">
-                <th className="pb-3 font-medium">Tanggal</th>
-                <th className="pb-3 font-medium">Hari</th>
-                <th className="pb-3 font-medium">Jam</th>
-                <th className="pb-3 font-medium">Mapel</th>
-                <th className="pb-3 font-medium">Status</th>
-                <th className="pb-3 font-medium">Verifikasi Oleh</th>
+                <th className="pb-3 font-semibold text-[#1a4731]">Tanggal</th>
+                <th className="pb-3 font-semibold text-[#1a4731]">Hari</th>
+                <th className="pb-3 font-semibold text-[#1a4731]">Jam</th>
+                <th className="pb-3 font-semibold text-[#1a4731]">Mapel</th>
+                <th className="pb-3 font-semibold text-[#1a4731]">Status</th>
+                <th className="pb-3 font-semibold text-[#1a4731]">Verifikasi Oleh</th>
               </tr>
             </thead>
             <tbody>
               {riwayatAbsensi.length > 0 ? (
                 riwayatAbsensi.map((item, idx) => (
                   <tr key={idx} className="border-b border-[#f0f7f3] last:border-0 hover:bg-[#f8fbf9] transition-colors">
-                    <td className="py-3 text-gray-700">{item.tanggal}</td>
+                    <td className="py-3 text-gray-700 font-medium">{item.tanggal}</td>
                     <td className="py-3 text-gray-600">{item.hari}</td>
                     <td className="py-3 text-gray-600">{item.jam}</td>
-                    <td className="py-3 text-gray-600">{item.mapel || '-'}</td>
+                    <td className="py-3 text-gray-700 font-medium">{item.mapel || '-'}</td>
                     <td className="py-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-block
                         ${item.status === 'Hadir' ? 'bg-green-100 text-green-700' : ''}
                         ${item.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : ''}
                         ${item.status === 'Izin' ? 'bg-blue-100 text-blue-700' : ''}
@@ -427,6 +481,7 @@ export default function MuridAbsensiView() {
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
   );
