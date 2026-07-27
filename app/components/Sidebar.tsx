@@ -27,6 +27,8 @@ const allMenuItems = [
   { id: 'laporan', label: 'Laporan Belajar', icon: BarChart3, path: '/laporan' },
   { id: 'profil', label: 'Profil', icon: User, path: '/profil' },
   { id: 'pengumuman', label: 'Pengumuman', icon: Megaphone, path: '/pengumuman' },
+  // ✅ Tambahkan logout sebagai menu item
+  { id: 'logout', label: 'Keluar', icon: LogOut, path: '#', isLogout: true },
 ];
 
 // Menu yang hanya untuk Murid
@@ -87,6 +89,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   const handleLogout = async () => {
+    if (!confirm("Apakah yakin anda ingin logout?")) return;
     try {
       const response = await fetch('/api/logout', {
         method: 'POST'
@@ -183,6 +186,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
+            
+            // ✅ Jika ini tombol logout, render dengan style khusus
+            if (item.isLogout) {
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-red-400 hover:bg-red-500/30 hover:text-red-200 active:bg-red-500/30 active:text-red-200"
+                >
+                  <Icon className="w-[18px] h-[18px] text-red-400" />
+                  {item.label}
+                </button>
+              );
+            }
+            
+            // Menu biasa
             return (
               <button
                 key={item.id}
@@ -198,14 +218,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           })}
         </nav>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/70 text-sm hover:text-white hover:bg-white/10 transition"
-        >
-          <LogOut className="w-[18px] h-[18px]" />
-          Keluar
-        </button>
+        {/* ✅ HAPUS tombol logout terpisah di sini karena sudah di dalam nav */}
       </aside>
     </>
   );
